@@ -67,18 +67,19 @@ const requestData = async function() {
     // Manhattan
     if(parseInt(d.properties.ZIPCODE)<=10282 && parseInt(d.properties.ZIPCODE)>=10001)
     
-    {return "#625C87"}
+    {return "#F4A261"}
+   
     // Staten Island
     if(parseInt(d.properties.ZIPCODE)<=10314 && parseInt(d.properties.ZIPCODE)>=10301)
-    {return "#2A9D8F"}
+    {return "#946E83"}
 
     // Bronx
     if(parseInt(d.properties.ZIPCODE)<=10475 && parseInt(d.properties.ZIPCODE)>=10451)
-    {return "#E9C46A"}
+    {return "#FCE887"}
 
     // Brooklyn
     if(parseInt(d.properties.ZIPCODE)<=11256 && parseInt(d.properties.ZIPCODE)>=11201)
-    {return "#F4A261"}
+    {return "#A9C8E9"}
 
     // Queens
     if(parseInt(d.properties.ZIPCODE)<=11109 && parseInt(d.properties.ZIPCODE)>=11004)
@@ -99,16 +100,13 @@ const requestData = async function() {
     svg.selectAll(".pin")
     .data(trees)
     .enter().append("circle")
-    .attr("r",5 )
+    .attr("r",1 )
+    .style("opacity", ".1")
     .attr("fill", "green")
-    .attr("transform", function(d) {
-      return "translate(" + projection([
-        d.latitude,
-        d.longitude
-      ]) + ")"
-    })
+    .attr("cx",function(d) { return projection([d["longitude"],d["latitude"]])[0];})
+    .attr("cy",function(d) { return projection([d["longitude"],d["latitude"]])[1];});
   
-}
+};
 
 requestData();
 </script>
