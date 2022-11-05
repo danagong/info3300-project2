@@ -8,9 +8,18 @@
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <link
+    href="https://fonts.googleapis.com/css?family=Aldrich|Arima+Madurai|Open Sans|Libre+Baskerville|Pirata+One|Poiret+One|Sancreek|Satisfy|Share+Tech+Mono|Smokum|Snowburst+One|Special+Elite"
+    rel="stylesheet">
+    <style>
+      body{
+        font-family: "Open Sans";
+      }
+    </style>
 
 </head>
 <body>
+  <h3> Trees and Air Quality in an Urban World</h3>
     <svg id="nyc-choropleth" height="600" width="900" >
     </svg>
 </body>
@@ -28,13 +37,11 @@ const svg = d3.select("#nyc-choropleth");
 
 const requestData = async function() {
 
-  // 2. Draw a map of US using topoJSON
-  // 2a. Import data as synchronous call to topoJSON data file
-  // Care of Mike Bostock:
-  //   "../datasets/us-smaller.json"
-  const nyc = await d3.json("zip_code_040114.geojson");
-  console.log(nyc);
 
+  const nyc = await d3.json("zip_code_040114.geojson");
+  const trees = await d3.csv("trees.csv");
+  console.log(nyc);
+  console.log(trees);
 
 
   //var state = topojson.feature(nyc, nyc.objects.STATE);     // List of state outlines to fill
@@ -42,52 +49,64 @@ const requestData = async function() {
   //console.log(stateMesh)
 
   var projection = d3.geoAlbers()
-    .scale( 10100)
     .fitSize([width, height], nyc)
-
-  var boroughColor
-
 
 
   const path = d3.geoPath(projection);
   console.log(path)
 
+  // creating NYC neighborhood/borough map
   var g = svg.append("g");
 
   g.selectAll( "path" )
     .data( nyc.features )
     .enter()
-    .append( "path" ) // before we used lines, now we are using a path allows path 
+    .append( "path" ) 
     //.attr( "fill", "#ccc" )
     .attr("fill", (function (d) { 
     // Manhattan
     if(parseInt(d.properties.ZIPCODE)<=10282 && parseInt(d.properties.ZIPCODE)>=10001)
     
-    {return "red"}
+    {return "#625C87"}
     // Staten Island
     if(parseInt(d.properties.ZIPCODE)<=10314 && parseInt(d.properties.ZIPCODE)>=10301)
-    {return "yellow"}
+    {return "#2A9D8F"}
 
     // Bronx
     if(parseInt(d.properties.ZIPCODE)<=10475 && parseInt(d.properties.ZIPCODE)>=10451)
-    {return "blue"}
+    {return "#E9C46A"}
 
     // Brooklyn
     if(parseInt(d.properties.ZIPCODE)<=11256 && parseInt(d.properties.ZIPCODE)>=11201)
-    {return "orange"}
+    {return "#F4A261"}
 
     // Queens
     if(parseInt(d.properties.ZIPCODE)<=11109 && parseInt(d.properties.ZIPCODE)>=11004)
-    {return "purple"}
+    {return "#E76F51"}
 
     // Queens
     if(parseInt(d.properties.ZIPCODE)<=11697 && parseInt(d.properties.ZIPCODE)>=11351)
-    {return "purple"}
+    {return "#E76F51"}
 
-    else {return "lightgrey"}
+    else {return "white"}
     } ))
+    .style("opacity", ".9")
     .attr( "stroke", "#333")
     .attr( "d", path );
+
+
+
+    svg.selectAll(".pin")
+    .data(trees)
+    .enter().append("circle")
+    .attr("r",5 )
+    .attr("fill", "green")
+    .attr("transform", function(d) {
+      return "translate(" + projection([
+        d.latitude,
+        d.longitude
+      ]) + ")"
+    })
   
 }
 
