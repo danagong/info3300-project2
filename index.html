@@ -5,8 +5,62 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project 2</title>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+
 </head>
 <body>
-    
+    <svg id="nyc-choropleth" height="600" width="900" >
+    </svg>
 </body>
+
+<script>
+const svg = d3.select("#nyc-choropleth");
+  const width = svg.attr("width");
+  const height = svg.attr("height");
+  const margin = { top: 20, right: 20, bottom: 20, left:20};
+  const mapWidth = width - margin.left - margin.right;
+  const mapHeight = height - margin.top - margin.bottom;
+  const map = svg.append("g")
+                  .attr("transform","translate("+margin.left+","+margin.top+")");
+
+
+const requestData = async function() {
+
+  // 2. Draw a map of US using topoJSON
+  // 2a. Import data as synchronous call to topoJSON data file
+  // Care of Mike Bostock:
+  //   "../datasets/us-smaller.json"
+  const nyc = await d3.json("zip_code_040114.geojson");
+  console.log(nyc);
+
+
+
+  //var state = topojson.feature(nyc, nyc.objects.STATE);     // List of state outlines to fill
+ // var stateMesh = topojson.mesh(nyc, nyc.objects.STATE);    // 'Mesh' of all outlines put together for a stroke
+  //console.log(stateMesh)
+
+  var projection = d3.geoAlbers()
+    .scale( 10100)
+    .fitSize([width, height], nyc)
+
+
+  const path = d3.geoPath(projection);
+  console.log(path)
+
+  var g = svg.append("g");
+
+  g.selectAll( "path" )
+    .data( nyc.features )
+    .enter()
+    .append( "path" ) // before we used lines, now we are using a path allows path 
+    .attr( "fill", "#ccc" )
+    .attr( "stroke", "#333")
+    .attr( "d", path );
+  
+}
+
+requestData();
+</script>
 </html>
