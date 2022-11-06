@@ -58,7 +58,7 @@ const requestData = async function() {
   // creating NYC neighborhood/borough map
   var viewport = map.append("g");
 
-  viewport.selectAll( "path" )
+  var areas = viewport.selectAll( "path" )
     .data( nyc.features )
     .enter()
     .append( "path" ) 
@@ -102,31 +102,47 @@ const requestData = async function() {
     .attr("cx",function(d) { return projection([d["longitude"],d["latitude"]])[0];})
     .attr("cy",function(d) { return projection([d["longitude"],d["latitude"]])[1];});
 
-    var zoom = d3.zoom()
-                     .scaleExtent([1,10])
-                     .on("zoom", mapZoomed);
-    viewport.call(zoom);
-    function mapZoomed({transform}) {     
-      viewport.attr("transform", transform.toString());
-      viewport.selectAll(".outline")
+  var zoom = d3.zoom()
+               .scaleExtent([1,10])
+               .on("zoom", mapZoomed);
+  viewport.call(zoom);
+  function mapZoomed({transform}) {     
+    viewport.attr("transform", transform.toString());
+    viewport.selectAll(".outline")
             .style("stroke-width", 1 / transform.k);
-      viewport.selectAll(".circles")
+    viewport.selectAll(".circles")
             .style("r", radius(transform.k));
-      viewport.selectAll(".circles")
+    viewport.selectAll(".circles")
             .style("opacity",  opa(transform.k));
-      }
+  }
     
-    function radius(k) {
-      const rScale = d3.scaleLinear().domain([1, 10])
-          .range([1, 0.5]);
-      return rScale(k);
-    }
+  function radius(k) {
+    const rScale = d3.scaleLinear().domain([1, 10])
+        .range([1, 0.5]);
+    return rScale(k);
+  }
 
-    function opa(k) {
-      const opaScale = d3.scaleLinear().domain([1, 10])
-          .range([0.1, 0.3]);
-      return opaScale(k);
-    }
+  function opa(k) {
+    const opaScale = d3.scaleLinear().domain([1, 10])
+        .range([0.1, 0.3]);
+    return opaScale(k);
+  }
+
+  const textbox = svg.append("g").attr("transform","translate(10,10)");
+  areas.on("mouseover", function() {
+    textbox.html('');
+    current = d3.select(this);
+    let title = d3.select(this).datum().properties.boro_cd;
+    textbox.append("text").text(title)
+      .attr("x", 700).attr("y", 500).attr("font-size","30px");
+  });
+
+  areas.on("mouseout", function() {
+    textbox.html('');
+    current = d3.select(this);
+    current.attr("r", 3)
+  });
+
 };
 
 requestData();
