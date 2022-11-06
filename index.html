@@ -123,11 +123,10 @@ const requestData = async function() {
     }
 
     function opa(k) {
-      const rScale = d3.scaleLinear().domain([1, 10])
+      const opaScale = d3.scaleLinear().domain([1, 10])
           .range([0.1, 0.3]);
-      return rScale(k);
+      return opaScale(k);
     }
-  
 };
 
 requestData();
