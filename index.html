@@ -40,10 +40,21 @@ const requestData = async function() {
 
   const nyc = await d3.json("map.geojson");
   const trees = await d3.csv("trees.csv");
+  const air = await d3.csv("air.csv");
   console.log(nyc);
   console.log(trees);
+  console.log(air);
 
+  var AirDict = {};
+  air.forEach(d => {
+      AirDict[d['community_district'] ] = d['particle_concentration'] 
+  });
 
+  airExtent = d3.extent(air, d => d['particle_concentration'] );
+  let airColorScale = d3.scaleLinear()
+    .domain(airExtent)
+    .range(['navy','turquoise']);
+  
   var projection = d3.geoAlbers()
     .fitSize([width, height], nyc)
 
@@ -127,20 +138,23 @@ const requestData = async function() {
   }
 
   const textbox = svg.append("g").attr("transform","translate(10,10)");
+  const textbox2 = svg.append("g").attr("transform","translate(10,10)");
   areas.on("mouseover", function() {
     textbox.html('');
     current = d3.select(this);
     let title = d3.select(this).datum().properties.boro_cd;
     textbox.append("text").text(title)
-      .attr("x", 700).attr("y", 500).attr("font-size","30px");
+      .attr("x", 800).attr("y", 500).attr("font-size","30px");
+    textbox2.append("text").text(AirDict[title])
+      .attr("x", 800).attr("y", 550).attr("font-size","30px");
   });
 
   areas.on("mouseout", function() {
     textbox.html('');
+    textbox2.html('');
     current = d3.select(this);
     current.attr("r", 3)
   });
-
 };
 
 requestData();
