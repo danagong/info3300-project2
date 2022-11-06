@@ -20,7 +20,7 @@
 </head>
 <body>
   <h3> Trees and Air Quality in an Urban World</h3>
-    <svg id="nyc-choropleth" height="600" width="900" >
+    <svg id="nyc-choropleth" height="600" width="1200" >
     </svg>
 </body>
 
@@ -38,15 +38,11 @@ const svg = d3.select("#nyc-choropleth");
 const requestData = async function() {
 
 
-  const nyc = await d3.json("Community Districts.geojson");
+  const nyc = await d3.json("map.geojson");
   const trees = await d3.csv("trees.csv");
   console.log(nyc);
   console.log(trees);
 
-
-  //var state = topojson.feature(nyc, nyc.objects.STATE);     // List of state outlines to fill
- // var stateMesh = topojson.mesh(nyc, nyc.objects.STATE);    // 'Mesh' of all outlines put together for a stroke
-  //console.log(stateMesh)
 
   var projection = d3.geoAlbers()
     .fitSize([width, height], nyc)
@@ -55,6 +51,8 @@ const requestData = async function() {
   const path = d3.geoPath(projection);
   console.log(path)
 
+  //console.log(nyc.features.pproperties)
+  const airScale = d3.scaleQuantile().domain([7,14]).range([1,.8,.5,.3,.15]);
   // creating NYC neighborhood/borough map
   var viewport = map.append("g");
 
@@ -64,13 +62,13 @@ const requestData = async function() {
     .append( "path" ) 
     .attr("class","outline")
     .style("stroke-width", 1)
-    .style("opacity", ".9")
+    .style("opacity", (d) => airScale(d.properties.air_quality))
     .attr( "stroke", "#333")
     .attr("fill", (function (d) { 
     // Manhattan
     if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101)
     
-    {return "#F4A261"}
+    {return "#F0852D"}
    
     // Staten Island
     if(parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501)
@@ -78,15 +76,15 @@ const requestData = async function() {
 
     // Bronx
     if(parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201)
-    {return "#FCE887"}
+    {return "#FAD937"}
 
     // Brooklyn
     if(parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301)
-    {return "#A9C8E9"}
+    {return "#3A74B1"}
 
     // Queens
     if(parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401)
-    {return "#E76F51"}
+    {return "#E45C3A"}
 
     else {return "lightgrey"}
     } ))
