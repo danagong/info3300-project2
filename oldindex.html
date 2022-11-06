@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 2</title>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <link
+    href="https://fonts.googleapis.com/css?family=Aldrich|Arima+Madurai|Open Sans|Libre+Baskerville|Pirata+One|Poiret+One|Sancreek|Satisfy|Share+Tech+Mono|Smokum|Snowburst+One|Special+Elite"
+    rel="stylesheet">
+    <style>
+      body{
+        font-family: "Open Sans";
+      }
+    </style>
+
+</head>
+<body>
+  <h3> Trees and Air Quality in an Urban World</h3>
+    <svg id="nyc-choropleth" height="600" width="900" >
+    </svg>
+</body>
+
+<script>
+const svg = d3.select("#nyc-choropleth");
+  const width = svg.attr("width");
+  const height = svg.attr("height");
+  const margin = { top: 20, right: 20, bottom: 20, left:20};
+  const mapWidth = width - margin.left - margin.right;
+  const mapHeight = height - margin.top - margin.bottom;
+  const map = svg.append("g")
+                  .attr("transform","translate("+margin.left+","+margin.top+")");
+
+
+const requestData = async function() {
+
+
+  const nyc = await d3.json("zip_code_040114.geojson");
+  const trees = await d3.csv("trees.csv");
+  console.log(nyc);
+  console.log(trees);
+
+
+  //var state = topojson.feature(nyc, nyc.objects.STATE);     // List of state outlines to fill
+ // var stateMesh = topojson.mesh(nyc, nyc.objects.STATE);    // 'Mesh' of all outlines put together for a stroke
+  //console.log(stateMesh)
+
+  var projection = d3.geoAlbers()
+    .fitSize([width, height], nyc)
+
+
+  const path = d3.geoPath(projection);
+  console.log(path)
+
+  // creating NYC neighborhood/borough map
+  var g = svg.append("g");
+
+  g.selectAll( "path" )
+    .data( nyc.features )
+    .enter()
+    .append( "path" ) 
+    //.attr( "fill", "#ccc" )
+    .attr("fill", (function (d) { 
+    // Manhattan
+    if(parseInt(d.properties.ZIPCODE)<=10282 && parseInt(d.properties.ZIPCODE)>=10001)
+    
+    {return "#F4A261"}
+   
+    // Staten Island
+    if(parseInt(d.properties.ZIPCODE)<=10314 && parseInt(d.properties.ZIPCODE)>=10301)
+    {return "#946E83"}
+
+    // Bronx
+    if(parseInt(d.properties.ZIPCODE)<=10475 && parseInt(d.properties.ZIPCODE)>=10451)
+    {return "#FCE887"}
+
+    // Brooklyn
+    if(parseInt(d.properties.ZIPCODE)<=11256 && parseInt(d.properties.ZIPCODE)>=11201)
+    {return "#A9C8E9"}
+
+    // Queens
+    if(parseInt(d.properties.ZIPCODE)<=11109 && parseInt(d.properties.ZIPCODE)>=11004)
+    {return "#E76F51"}
+
+    // Queens
+    if(parseInt(d.properties.ZIPCODE)<=11697 && parseInt(d.properties.ZIPCODE)>=11351)
+    {return "#E76F51"}
+
+    else {return "white"}
+    } ))
+    .style("opacity", ".9")
+    .attr( "stroke", "#333")
+    .attr( "d", path );
+
+
+
+    svg.selectAll(".pin")
+    .data(trees)
+    .enter().append("circle")
+    .attr("r",1 )
+    .style("opacity", ".1")
+    .attr("fill", "green")
+    .attr("cx",function(d) { return projection([d["longitude"],d["latitude"]])[0];})
+    .attr("cy",function(d) { return projection([d["longitude"],d["latitude"]])[1];});
+  
+};
+
+requestData();
+</script>
+</html>

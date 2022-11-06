@@ -38,7 +38,7 @@ const svg = d3.select("#nyc-choropleth");
 const requestData = async function() {
 
 
-  const nyc = await d3.json("zip_code_040114.geojson");
+  const nyc = await d3.json("Community Districts.geojson");
   const trees = await d3.csv("trees.csv");
   console.log(nyc);
   console.log(trees);
@@ -62,37 +62,34 @@ const requestData = async function() {
     .data( nyc.features )
     .enter()
     .append( "path" ) 
-    //.attr( "fill", "#ccc" )
+    .attr( "fill", "#ccc" )
+    .style("opacity", ".9")
+    .attr( "stroke", "#333")
     .attr("fill", (function (d) { 
     // Manhattan
-    if(parseInt(d.properties.ZIPCODE)<=10282 && parseInt(d.properties.ZIPCODE)>=10001)
+    if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101)
     
     {return "#F4A261"}
    
     // Staten Island
-    if(parseInt(d.properties.ZIPCODE)<=10314 && parseInt(d.properties.ZIPCODE)>=10301)
+    if(parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501)
     {return "#946E83"}
 
     // Bronx
-    if(parseInt(d.properties.ZIPCODE)<=10475 && parseInt(d.properties.ZIPCODE)>=10451)
+    if(parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201)
     {return "#FCE887"}
 
     // Brooklyn
-    if(parseInt(d.properties.ZIPCODE)<=11256 && parseInt(d.properties.ZIPCODE)>=11201)
+    if(parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301)
     {return "#A9C8E9"}
 
     // Queens
-    if(parseInt(d.properties.ZIPCODE)<=11109 && parseInt(d.properties.ZIPCODE)>=11004)
+    if(parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401)
     {return "#E76F51"}
 
-    // Queens
-    if(parseInt(d.properties.ZIPCODE)<=11697 && parseInt(d.properties.ZIPCODE)>=11351)
-    {return "#E76F51"}
 
-    else {return "white"}
+    else {return "lightgrey"}
     } ))
-    .style("opacity", ".9")
-    .attr( "stroke", "#333")
     .attr( "d", path );
 
 
