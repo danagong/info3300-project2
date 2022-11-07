@@ -20,7 +20,7 @@
 </head>
 <body>
   <h3> Trees and Air Quality in an Urban World</h3>
-    <svg id="nyc-choropleth" height="600" width="1200" >
+    <svg id="nyc-choropleth" height="700" width="1200" >
     </svg>
 </body>
 
@@ -56,7 +56,7 @@ const requestData = async function() {
     .range(['navy','turquoise']);
   
   var projection = d3.geoAlbers()
-    .fitSize([width, height], nyc)
+    .fitSize([mapWidth, mapHeight], nyc)
 
 
   const path = d3.geoPath(projection);
