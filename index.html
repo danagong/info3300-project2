@@ -177,27 +177,21 @@ const requestData2 = async function() {
   const trees2 = await d3.csv("trees.csv");
   const povertyData = await d3.csv("nyc_zip_borough_neighborhoods_pop.csv");
   
-  console.log(povertyData);
+  console.log(trees2);
   
   let blockTreeNum = {};
   let blockPoverty = {};
   for(let i=0; i<trees2.length;i++)
   {
-    if (!blockTreeNum[trees2[i].borough]){
-      blockTreeNum[trees2[i].borough] = 0;
+    if (!blockTreeNum[trees2[i].zip]){
+      blockTreeNum[trees2[i].zip] = 0;
     }
-    blockTreeNum[trees2[i].borough]+=1;
+
+    blockTreeNum[trees2[i].zip]+=1;
 
   }
-  for(let i=0; i<povertyData.length;i++)
-  {
-    if (!blockTreeNum[povertyData[i].borough]){
-      blockTreeNum[povertyData[i].borough] = 0;
-    }
-    blockTreeNum[povertyData[i].borough]+=1;
 
-  }
-  // console.log(d3.entries(blockTreeNum ));
+  console.log((blockTreeNum));
   //x Scale 
   const treeExtent = d3.extent(Object.values(blockTreeNum));
   const treeScale = d3.scaleLinear().domain(treeExtent).range([0, mapWidth2]);
@@ -215,14 +209,12 @@ const requestData2 = async function() {
                   .call(bottomGridlines);
 
   //y Scale
-  let leftAxis = d3.axisLeft(yScale);
-  svg.append('g')
-      .attr('class', 'y axis')
-      .attr('transform',`translate(${margins.left-10},${margins.top})`) 
-      .call(leftAxis);
+  // let leftAxis = d3.axisLeft(yScale);
+  // svg.append('g')
+  //     .attr('class', 'y axis')
+  //     .attr('transform',`translate(${margins.left-10},${margins.top})`) 
+  //     .call(leftAxis);
 
-
-  console.log(blockTreeNum)
 
 
 
