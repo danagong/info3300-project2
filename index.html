@@ -177,7 +177,6 @@ const requestData2 = async function() {
   const trees2 = await d3.csv("trees.csv");
   const nycData = await d3.csv("nyc_zip_borough_neighborhoods_pop.csv");
   
-  console.log(nycData);
   
   let blockTreeNum = {};
   let blockPopulation = {};
@@ -196,7 +195,6 @@ const requestData2 = async function() {
     blockPopulation[nycData[i].zip]=nycData[i].population;
 
   }
-  // console.log(blockTreeNum)
   //x Scale 
   const treeExtent = d3.extent(Object.values(blockTreeNum));
   const treeScale = d3.scaleLinear().domain(treeExtent).range([0, mapWidth2]);
@@ -205,7 +203,6 @@ const requestData2 = async function() {
       .attr('class', 'x axis')
       .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top})`)
       .call(bottomAxis);
-  console.log(Object.values(blockTreeNum))
   let bottomGridlines = d3.axisBottom(treeScale)
                           .tickSize(-mapHeight2)
                           .tickFormat('')
@@ -215,13 +212,11 @@ const requestData2 = async function() {
                   .call(bottomGridlines);
 
   //y Scale
-  console.log();
   pop_data = (d3.map(nycData,d=>d.population)).map(Number)
   
   const popExtent = d3.extent(pop_data);
   const popScale = d3.scaleLinear().domain(popExtent).range([mapHeight2, 0]);
   let leftAxis = d3.axisLeft(popScale);
-  // console.log(popExtent);
   svg2.append('g')
       .attr('class', 'y axis')
       .attr('transform',`translate(${margin2.left},${margin2.top})`) 
@@ -235,7 +230,6 @@ const requestData2 = async function() {
   // data point
   Object.keys(blockTreeNum).forEach((d,i)=>
   {
-    console.log(blockTreeNum[d],Number(blockPopulation[d]))
     scatterPlot.append('circle')
                 .attr('cx', treeScale(blockTreeNum[d]))
                 .attr('cy', popScale(Number(blockPopulation[d])))
@@ -252,7 +246,7 @@ const requestData2 = async function() {
     .text("Number of trees in a zipcode block");
   svg2.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", 0 - width2.left)
+      .attr("y", 0)
       .attr("x",0 - (height2 / 2))
       .attr("dy", "1em")
       .style("text-anchor", "middle")
