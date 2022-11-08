@@ -159,4 +159,75 @@ const requestData = async function() {
 
 requestData();
 </script>
+<h3> Trees and Poverty Scatter Plot</h3>
+<svg id="nyc-scatterplot" height="700" width="1200" ></svg>
+<script>
+  const svg2 = d3.select("#nyc-scatterplot");
+  const width2 = svg.attr("width");
+  const height2 = svg.attr("height");
+  const margin2 = { top: 50, right: 50, bottom: 50, left:50};
+  const mapWidth2 = width - margin2.left - margin2.right;
+  const mapHeight2 = height - margin2.top - margin2.bottom;
+  const scatterPlot = svg.append("g")
+                  .attr("transform","translate("+margin2.left+","+margin2.top+")");
+
+                  
+const requestData2 = async function() {
+
+  const trees2 = await d3.csv("trees.csv");
+  const povertyData = await d3.csv("nyc_zip_borough_neighborhoods_pop.csv");
+  
+  console.log(povertyData);
+  
+  let blockTreeNum = {};
+  let blockPoverty = {};
+  for(let i=0; i<trees2.length;i++)
+  {
+    if (!blockTreeNum[trees2[i].borough]){
+      blockTreeNum[trees2[i].borough] = 0;
+    }
+    blockTreeNum[trees2[i].borough]+=1;
+
+  }
+  for(let i=0; i<povertyData.length;i++)
+  {
+    if (!blockTreeNum[povertyData[i].borough]){
+      blockTreeNum[povertyData[i].borough] = 0;
+    }
+    blockTreeNum[povertyData[i].borough]+=1;
+
+  }
+  // console.log(d3.entries(blockTreeNum ));
+  //x Scale 
+  const treeExtent = d3.extent(Object.values(blockTreeNum));
+  const treeScale = d3.scaleLinear().domain(treeExtent).range([0, mapWidth2]);
+  let bottomAxis = d3.axisBottom(treeScale).ticks(6)
+  svg2.append('g')
+      .attr('class', 'x axis')
+      .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top+10})`)
+      .call(bottomAxis);
+  let bottomGridlines = d3.axisBottom(treeScale)
+                          .tickSize(-mapHeight2-10)
+                          .tickFormat('')
+                          .ticks(6);
+  svg2.append('g').attr('class', 'x gridlines')
+                  .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top+10})`)
+                  .call(bottomGridlines);
+
+  //y Scale
+  let leftAxis = d3.axisLeft(yScale);
+  svg.append('g')
+      .attr('class', 'y axis')
+      .attr('transform',`translate(${margins.left-10},${margins.top})`) 
+      .call(leftAxis);
+
+
+  console.log(blockTreeNum)
+
+
+
+};//finish request data
+requestData2();
+
+</script>
 </html>
