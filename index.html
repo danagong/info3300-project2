@@ -137,23 +137,52 @@ const requestData = async function() {
     return opaScale(k);
   }
 
-  const textbox = svg.append("g").attr("transform","translate(10,10)");
-  const textbox2 = svg.append("g").attr("transform","translate(10,10)");
+  let tooltip = map.append("g")
+                     .attr("class","tooltip")
+                     .attr("visibility","hidden");
+  tooltip.append("rect")
+           .attr("fill", "black")
+           .attr("opacity", 1)
+           .attr("x", -20)
+           .attr("y", 0)
+           .attr("width",180)
+           .attr("height",40)
+  let textbox = tooltip.append("text")
+                     .text('halo')
+                     .attr("fill", "white")
+                     .attr("text-anchor","middle")
+                     .attr("alignment-baseline","hanging")
+                     .attr("x", 60)
+                     .attr("y", 2);
+  let textbox2 = tooltip.append("text")
+                    .attr("fill", "white")
+                    .attr("text-anchor","middle")
+                    .attr("alignment-baseline","hanging")
+                    .attr("x", 60)
+                    .attr("y", 22);
+
+
   areas.on("mouseover", function() {
-    textbox.html('');
+    tooltip.style("visibility","visible")
     current = d3.select(this);
+    current.style("stroke-width", 3)
     let title = d3.select(this).datum().properties.boro_cd;
-    textbox.append("text").text("Community: " + title)
-      .attr("x", 800).attr("y", 500).attr("font-size","15px");
-    textbox2.append("text").text("Air Particles: " + String(AirDict[title]).slice(0, 5))
-      .attr("x", 800).attr("y", 550).attr("font-size","15px");
+    textbox.text("Community: " + title)
+      .attr("font-size","15px");
+    textbox2.text("Air Particles: " + String(AirDict[title]).slice(0, 5))
+      .attr("font-size","15px");
+    let bounds = path.bounds( current.datum() )
+    let xPos = (bounds[0][0]+bounds[1][0])/2.0 + 50;
+    let yPos = (bounds[1][1] - 50);
+    tooltip.attr("transform",`translate(${xPos},${yPos})`);
   });
 
   areas.on("mouseout", function() {
+    tooltip.style("visibility","hidden")
     textbox.html('');
     textbox2.html('');
     current = d3.select(this);
-    current.attr("r", 3)
+    current.style("stroke-width", 1)
   });
 };
 
