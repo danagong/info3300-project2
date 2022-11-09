@@ -50,19 +50,19 @@ const requestData = async function() {
       AirDict[d['community_district'] ] = d['particle_concentration'] 
   });
 
-  airExtent = d3.extent(air, d => d['particle_concentration'] );
+  airExtent = d3.extent(air, d => Number(d['particle_concentration']));
   let airColorScale = d3.scaleLinear()
     .domain(airExtent)
-    .range(['navy','turquoise']);
+    .range(['turquoise','navy']);
+
+  console.log(airExtent);
   
   var projection = d3.geoAlbers()
     .fitSize([mapWidth, mapHeight], nyc)
 
 
   const path = d3.geoPath(projection);
-  console.log(path)
 
-  //console.log(nyc.features.pproperties)
   const airScale = d3.scaleQuantile().domain([7,14]).range([1,.8,.5,.3,.15]);
   // creating NYC neighborhood/borough map
   var viewport = map.append("g");
@@ -73,31 +73,31 @@ const requestData = async function() {
     .append( "path" ) 
     .attr("class","outline")
     .style("stroke-width", 1)
-    .style("opacity", (d) => airScale(d.properties.air_quality))
+    .style("opacity", 1)
     .attr( "stroke", "#333")
     .attr("fill", (function (d) { 
     // Manhattan
-    if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101)
-    
-    {return "#F0852D"}
-   
-    // Staten Island
-    if(parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501)
-    {return "#946E83"}
+        if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101)
+        
+        {return airColorScale(AirDict[d.properties.boro_cd])}
+      
+        // Staten Island
+        if(parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501)
+        {return airColorScale(AirDict[d.properties.boro_cd])}
 
-    // Bronx
-    if(parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201)
-    {return "#FAD937"}
+        // Bronx
+        if(parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201)
+        {return airColorScale(AirDict[d.properties.boro_cd])}
 
-    // Brooklyn
-    if(parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301)
-    {return "#3A74B1"}
+        // Brooklyn
+        if(parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301)
+        {return airColorScale(AirDict[d.properties.boro_cd])}
 
-    // Queens
-    if(parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401)
-    {return "#E45C3A"}
+        // Queens
+        if(parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401)
+        {return airColorScale(AirDict[d.properties.boro_cd])}
 
-    else {return "lightgrey"}
+        else {return "lightgrey"}
     } ))
     .attr( "d", path );
 
@@ -143,10 +143,10 @@ const requestData = async function() {
     textbox.html('');
     current = d3.select(this);
     let title = d3.select(this).datum().properties.boro_cd;
-    textbox.append("text").text(title)
-      .attr("x", 800).attr("y", 500).attr("font-size","30px");
-    textbox2.append("text").text(AirDict[title])
-      .attr("x", 800).attr("y", 550).attr("font-size","30px");
+    textbox.append("text").text("Community: " + title)
+      .attr("x", 800).attr("y", 500).attr("font-size","15px");
+    textbox2.append("text").text("Air Particles: " + String(AirDict[title]).slice(0, 5))
+      .attr("x", 800).attr("y", 550).attr("font-size","15px");
   });
 
   areas.on("mouseout", function() {
