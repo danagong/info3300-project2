@@ -188,7 +188,7 @@ const requestData = async function() {
 
 requestData();
 </script>
-<h3> Trees and Population Scatter Plot</h3>
+<h3> Trees and Poverty Rate Scatter Plot</h3>
 <svg id="nyc-scatterplot" height="700" width="1200" ></svg>
 <script>
   const svg2 = d3.select("#nyc-scatterplot");
@@ -204,29 +204,52 @@ requestData();
 const requestData2 = async function() {
 
   const trees2 = await d3.csv("trees.csv");
-  const nycData = await d3.csv("nyc_zip_borough_neighborhoods_pop.csv");
-  
+  const nycData = await d3.csv("Neighborhood_Financial_Health_Digital_Mapping_and_Data_Tool.csv");
+  console.log(nycData)
   
   let blockTreeNum = {};
   let blockPopulation = {};
+  let blockBorough = {};
   for(let i=0; i<trees2.length;i++)
   {
-    if (!blockTreeNum[trees2[i].postcode]){
-      blockTreeNum[trees2[i].postcode] = 0;
+    if (!blockTreeNum[trees2[i].nta]){
+      blockTreeNum[trees2[i].nta] = 0;
     }
-
-    blockTreeNum[trees2[i].postcode]+=1;
+    blockTreeNum[trees2[i].nta]+=1;
+    blockBorough[trees2[i].nta]=(trees2[i].borough);
 
   }
+  let CDCode = "";
+  let CDOriginal = "";
+  
   for(let i=0; i<nycData.length;i++)
   {
+    CDOriginal = nycData[i].CD.split(' ');
     
-    blockPopulation[nycData[i].zip]=nycData[i].population;
+    if ((CDOriginal[3].length)==1) 
+    {
+      CDCode = CDOriginal[0]+"0"+CDOriginal[3];
+    }
+    else CDCode = CDOriginal[0]+CDOriginal[3];
+    blockPopulation[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
 
+    if ((CDOriginal.length)==6) 
+    {
+      if ((CDOriginal[5].length)==1) 
+      {
+        CDCode = CDOriginal[0]+"0"+CDOriginal[5];
+      }
+      else CDCode = CDOriginal[0]+CDOriginal[5];
+    }
+    blockPopulation[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
+    
   }
+  // console.log(blockPopulation);
+  // console.log(blockTreeNum);
+  // console.log(blockBorough);
   //x Scale 
   const treeExtent = d3.extent(Object.values(blockTreeNum));
-  const treeScale = d3.scaleLinear().domain(treeExtent).range([0, mapWidth2]);
+  const treeScale = d3.scaleLinear().domain([0,1530]).range([0, mapWidth2]);
   let bottomAxis = d3.axisBottom(treeScale).ticks(6)
   svg2.append('g')
       .attr('class', 'x axis')
@@ -241,7 +264,7 @@ const requestData2 = async function() {
                   .call(bottomGridlines);
 
   //y Scale
-  pop_data = (d3.map(nycData,d=>d.population)).map(Number)
+  pop_data = (d3.map(nycData,d=>d.NYC_Poverty_Rate)).map(Number)
   
   const popExtent = d3.extent(pop_data);
   const popScale = d3.scaleLinear().domain(popExtent).range([mapHeight2, 0]);
@@ -256,32 +279,48 @@ const requestData2 = async function() {
   svg2.append('g').attr('class', 'y gridlines')
             .attr('transform',`translate(${margin2.left},${margin2.top})`)
             .call(leftGridlines);
+  // color scale
+  var colorArray = [
+                    "#4682B4",
+                      "#ADD8E6",
+                      "#FF69B4",
+                      "#008000",
+                      "#9933ff"
+                      ];
+  const colorExtent = d3.extent(trees2, d => d.borough);
+  const colorScale = d3.scaleOrdinal()
+                        .domain(colorExtent)//give it all the data not just extent to binning
+                        .range(colorArray)
   // data point
-  Object.keys(blockTreeNum).forEach((d,i)=>
+  Object.keys(blockPopulation).forEach((d,i)=>
   {
-    scatterPlot.append('circle')
+    if(blockTreeNum[d]!=undefined){
+      scatterPlot.append('circle')
                 .attr('cx', treeScale(blockTreeNum[d]))
                 .attr('cy', popScale(Number(blockPopulation[d])))
                 .attr('r', 5)
-                .attr('opacity', 0.5)
+                .attr('opacity', 0.9)
                 .attr('index', i)
-                .style('fill', 'darkblue');
+                .style('fill', colorScale(blockBorough[d]));
+
+    }
+    
   });
   svg2.append("text")
     .attr("class", "x label")
     .attr("text-anchor", "end")
     .attr("x", width2/2)
     .attr("y", height2-10)
-    .text("Number of trees in a zipcode block");
+    .text("Number of trees");
   svg2.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", 0)
       .attr("x",0 - (height2 / 2))
       .attr("dy", "1em")
       .style("text-anchor", "middle")
-      .text("Population in a zipcode block");
+      .text("NYC Poverty rate");
   
-    
+
 
 };//finish request data
 requestData2();
