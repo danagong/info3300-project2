@@ -15,181 +15,174 @@
       body{
         font-family: "Open Sans";
       }
+      .tooltip {
+        pointer-events: none;
+      }
+      .tree {
+        pointer-events: none;
+      }
     </style>
 
 </head>
 <body>
   <h3> Trees and Air Quality in an Urban World</h3>
-    <svg id="nyc-choropleth" height="700" width="1200" >
-    </svg>
+  <svg id="nyc-choropleth" height="700" width="1200" style="background-color:lightyellow"></svg>
+  <h3> Trees and Poverty Rate Scatter Plot</h3>
+  <svg id="nyc-scatterplot" height="700" width="1200" ></svg>
 </body>
 
 <script>
-const svg = d3.select("#nyc-choropleth");
+  // Set up map svg
+  const svg = d3.select("#nyc-choropleth");
   const width = svg.attr("width");
   const height = svg.attr("height");
   const margin = { top: 20, right: 20, bottom: 20, left:20};
   const mapWidth = width - margin.left - margin.right;
   const mapHeight = height - margin.top - margin.bottom;
-  const map = svg.append("g")
-                  .attr("transform","translate("+margin.left+","+margin.top+")");
+  const map = svg.append("g").attr("transform","translate("+margin.left+","+margin.top+")");
 
+  let instructions = map.append("g").attr("transform", "translate(50, 20)");
 
-const requestData = async function() {
-
-
-  const nyc = await d3.json("map.geojson");
-  const trees = await d3.csv("trees.csv");
-  const air = await d3.csv("air.csv");
-  console.log(nyc);
-  console.log(trees);
-  console.log(air);
-
-  var AirDict = {};
-  air.forEach(d => {
-      AirDict[d['community_district'] ] = d['particle_concentration'] 
-  });
-
-  airExtent = d3.extent(air, d => Number(d['particle_concentration']));
-  let airColorScale = d3.scaleLinear()
-    .domain(airExtent)
-    .range(['turquoise','navy']);
-
-  console.log(airExtent);
+  instructions.append("rect")
+            .attr("fill", "lightgreen")
+            .attr("class", "instructions")
+            .attr("width", 350)
+            .attr("height", 200);
   
-  var projection = d3.geoAlbers()
-    .fitSize([mapWidth, mapHeight], nyc)
+  instructions.append("text")
+              .attr("alignment-baseline","hanging")
+              .attr("x", 100)
+              .attr("y", 20)
+              .text("Instruction Block:");
 
+  let legend = map.append("g").attr("transform", "translate(50, 250)");
 
-  const path = d3.geoPath(projection);
+  const requestData = async function() {
+    // Import data sets
+    const nyc = await d3.json("data/map.geojson");
+    const trees = await d3.csv("data/trees.csv");
+    const air = await d3.csv("data/air.csv");
+    console.log(nyc);
+    console.log(trees);
+    console.log(air);
 
-  const airScale = d3.scaleQuantile().domain([7,14]).range([1,.8,.5,.3,.15]);
-  // creating NYC neighborhood/borough map
-  var viewport = map.append("g");
+    // Compile air quality information
+    var AirDict = {};
+    air.forEach(d => {
+        AirDict[d['community_district'] ] = d['particle_concentration'] 
+    });
 
-  var areas = viewport.selectAll( "path" )
-    .data( nyc.features )
-    .enter()
-    .append( "path" ) 
-    .attr("class","outline")
-    .style("stroke-width", 0.5)
-    .style("opacity", 1)
-    .attr( "stroke", "#333")
-    .attr("fill", (function (d) { 
-    // Manhattan
-        if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101)
+    airExtent = d3.extent(air, d => Number(d['particle_concentration']));
+    let airColorScale = d3.scaleLinear()
+                          .domain(airExtent)
+                          .range(['lightblue','darkred']);
         
-        {return airColorScale(AirDict[d.properties.boro_cd])}
-      
-        // Staten Island
-        if(parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501)
-        {return airColorScale(AirDict[d.properties.boro_cd])}
+    // Create NYC map
+    var projection = d3.geoAlbers().fitSize([mapWidth, mapHeight], nyc)
+    const path = d3.geoPath(projection);
 
-        // Bronx
-        if(parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201)
-        {return airColorScale(AirDict[d.properties.boro_cd])}
+    var viewport = map.append("g");
 
-        // Brooklyn
-        if(parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301)
-        {return airColorScale(AirDict[d.properties.boro_cd])}
-
-        // Queens
-        if(parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401)
-        {return airColorScale(AirDict[d.properties.boro_cd])}
-
-        else {return "lightgrey"}
-    } ))
-    .attr( "d", path );
-
-  viewport.selectAll(".pin")
-    .data(trees)
-    .enter().append("circle")
-    .attr("class","circles")
-    .attr("r",1 )
-    .style("opacity", ".1")
-    .attr("fill", "green")
-    .attr("cx",function(d) { return projection([d["longitude"],d["latitude"]])[0];})
-    .attr("cy",function(d) { return projection([d["longitude"],d["latitude"]])[1];});
-
-  var zoom = d3.zoom()
-               .scaleExtent([1,3])
-               .on("zoom", mapZoomed);
-  viewport.call(zoom);
-  function mapZoomed({transform}) {     
-    viewport.attr("transform", transform.toString());
-    viewport.selectAll(".outline")
-            .style("stroke-width", 1 / transform.k);
-    viewport.selectAll(".circles")
-            .style("r", radius(transform.k));
-    viewport.selectAll(".circles")
-            .style("opacity",  opa(transform.k));
-  }
+    var communities = viewport.selectAll("path.community")
+      .data( nyc.features )
+      .join("path")
+      .attr("class", "community")
+      .attr("stroke", "black")
+      .style("stroke-width", 1)
+      .attr("d", path)
+      .attr("fill", function (d) { 
+          // Manhattan: 101-112
+          // Staten Island: 501-503
+          // Bronx: 201-212
+          // Brooklyn: 301-318
+          // Queens: 401-414
+          if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101 ||
+            parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501 ||
+            parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201 ||
+            parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301 ||
+            parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401) 
+              return airColorScale(AirDict[d.properties.boro_cd])
     
-  function radius(k) {
-    const rScale = d3.scaleLinear().domain([1, 10])
-        .range([1, 0.5]);
-    return rScale(k);
-  }
+          else return "black"
+      })
+      .on('mouseover',  mouseEntersCommunity )
+      .on('mouseout',  mouseLeavesCommunity );
 
-  function opa(k) {
-    const opaScale = d3.scaleLinear().domain([1, 10])
-        .range([0.1, 0.3]);
-    return opaScale(k);
-  }
+    viewport.selectAll("circle.tree")
+            .data(trees)
+            .join("circle")
+            .attr("class", "tree")
+            .attr("r", 0.5)
+            .attr("fill", "green")
+            .attr("cx", d => projection([d["longitude"], d["latitude"]])[0])
+            .attr("cy", d => projection([d["longitude"], d["latitude"]])[1]);
 
-  let tooltip = map.append("g")
-                     .attr("class","tooltip")
-                     .attr("visibility","hidden");
-  tooltip.append("rect")
-           .attr("fill", "black")
-           .attr("opacity", 1)
-           .attr("x", -20)
-           .attr("y", 0)
-           .attr("width",180)
-           .attr("height",40)
-  let textbox = tooltip.append("text")
-                     .text('halo')
-                     .attr("fill", "white")
-                     .attr("text-anchor","middle")
-                     .attr("alignment-baseline","hanging")
-                     .attr("x", 60)
-                     .attr("y", 2);
-  let textbox2 = tooltip.append("text")
-                    .attr("fill", "white")
-                    .attr("text-anchor","middle")
-                    .attr("alignment-baseline","hanging")
-                    .attr("x", 60)
-                    .attr("y", 22);
+    // Zoom interaction
+    var zoom = d3.zoom().scaleExtent([1,3]).on("zoom", mapZoomed);
+
+    viewport.call(zoom);
+
+    function mapZoomed({transform}) {     
+      viewport.attr("transform", transform);
+    }
+
+    // Mouseover interaction
+    let tooltip = map.append("g")
+                      .attr("class","tooltip")
+                      .attr("visibility","hidden");
+    tooltip.append("rect")
+            .attr("fill", "black")
+            .attr("opacity", 1)
+            .attr("x", -20)
+            .attr("y", 0)
+            .attr("width", 180)
+            .attr("height", 40)
+    let textbox = tooltip.append("text")
+                      .text('halo')
+                      .attr("fill", "white")
+                      .attr("text-anchor","middle")
+                      .attr("alignment-baseline","hanging")
+                      .attr("x", 60)
+                      .attr("y", 2);
+    let textbox2 = tooltip.append("text")
+                      .attr("fill", "white")
+                      .attr("text-anchor","middle")
+                      .attr("alignment-baseline","hanging")
+                      .attr("x", 60)
+                      .attr("y", 22);
 
 
-  areas.on("mouseover", function() {
-    tooltip.style("visibility","visible")
-    current = d3.select(this);
-    current.style("stroke-width", 3)
-    let title = d3.select(this).datum().properties.boro_cd;
-    textbox.text("Community: " + title)
-      .attr("font-size","15px");
-    textbox2.text("Air Particles: " + String(AirDict[title]).slice(0, 5))
-      .attr("font-size","15px");
-    let bounds = path.bounds( current.datum() )
-    let xPos = (bounds[0][0]+bounds[1][0])/2.0 + 50;
-    let yPos = (bounds[1][1] - 50);
-    tooltip.attr("transform",`translate(${xPos},${yPos})`);
-  });
+    function mouseEntersCommunity() {
+      tooltip.style("visibility","visible")
 
-  areas.on("mouseout", function() {
-    tooltip.style("visibility","hidden")
-    textbox.html('');
-    textbox2.html('');
-    current = d3.select(this);
-    current.style("stroke-width", 0.5)
-  });
-};
+      current = d3.select(this);
+      current.style("stroke-width", 2)
 
-requestData();
+      let title = d3.select(this).datum().properties.boro_cd;
+      textbox.text("Community: " + title).attr("font-size","15px");
+      textbox2.text("Air Particles: " + String(AirDict[title]).slice(0, 5)).attr("font-size","15px");
+
+      let bounds = path.bounds( current.datum() )
+      let xPos = (bounds[0][0]+bounds[1][0])/2.0 + 50;
+      let yPos = (bounds[1][1] - 50);
+      tooltip.attr("transform",`translate(${xPos},${yPos})`);
+    }
+
+   function mouseLeavesCommunity() {
+      tooltip.style("visibility","hidden")
+      textbox.html('');
+      textbox2.html('');
+
+      current = d3.select(this);
+      current.style("stroke-width", 1)
+    };
+
+  };
+
+  requestData();
 </script>
-<h3> Trees and Poverty Rate Scatter Plot</h3>
-<svg id="nyc-scatterplot" height="700" width="1200" ></svg>
+
+
 <script>
   const svg2 = d3.select("#nyc-scatterplot");
   const width2 = svg2.attr("width");
@@ -201,149 +194,145 @@ requestData();
                   .attr("transform","translate("+margin2.left+","+margin2.top+")");
 
                   
-const requestData2 = async function() {
+  const requestData2 = async function() {
 
-  const trees2 = await d3.csv("trees.csv");
-  const nycData = await d3.csv("Neighborhood_Financial_Health_Digital_Mapping_and_Data_Tool.csv");
-  console.log(nycData)
-  
-  let blockTreeNum = {};
-  let blockPopulation = {};
-  let blockBorough = {};
-  for(let i=0; i<trees2.length;i++)
-  {
-    if (!blockTreeNum[trees2[i].nta]){
-      blockTreeNum[trees2[i].nta] = 0;
-    }
-    blockTreeNum[trees2[i].nta]+=1;
-    blockBorough[trees2[i].nta]=(trees2[i].borough);
-
-  }
-  let CDCode = "";
-  let CDOriginal = "";
-  
-  for(let i=0; i<nycData.length;i++)
-  {
-    CDOriginal = nycData[i].CD.split(' ');
+    const trees2 = await d3.csv("data/trees.csv");
+    const nycData = await d3.csv("data/neighborhood_income.csv");
+    console.log(nycData)
     
-    if ((CDOriginal[3].length)==1) 
+    let blockTreeNum = {};
+    let blockPopulation = {};
+    let blockBorough = {};
+    for(let i=0; i<trees2.length;i++)
     {
-      CDCode = CDOriginal[0]+"0"+CDOriginal[3];
-    }
-    else CDCode = CDOriginal[0]+CDOriginal[3];
-    blockPopulation[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
-
-    if ((CDOriginal.length)==6) 
-    {
-      if ((CDOriginal[5].length)==1) 
-      {
-        CDCode = CDOriginal[0]+"0"+CDOriginal[5];
+      if (!blockTreeNum[trees2[i].nta]){
+        blockTreeNum[trees2[i].nta] = 0;
       }
-      else CDCode = CDOriginal[0]+CDOriginal[5];
-    }
-    blockPopulation[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
-    
-  }
-  // console.log(blockPopulation);
-  // console.log(blockTreeNum);
-  // console.log(blockBorough);
-  //x Scale 
-  const treeExtent = d3.extent(Object.values(blockTreeNum));
-  const treeScale = d3.scaleLinear().domain([0,1530]).range([0, mapWidth2]);
-  let bottomAxis = d3.axisBottom(treeScale).ticks(6)
-  svg2.append('g')
-      .attr('class', 'x axis')
-      .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top})`)
-      .call(bottomAxis);
-  let bottomGridlines = d3.axisBottom(treeScale)
-                          .tickSize(-mapHeight2)
-                          .tickFormat('')
-                          .ticks(6);
-  svg2.append('g').attr('class', 'x gridlines')
-                  .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top})`)
-                  .call(bottomGridlines);
-
-  //y Scale
-  pop_data = (d3.map(nycData,d=>d.NYC_Poverty_Rate)).map(Number)
-  
-  const popExtent = d3.extent(pop_data);
-  const popScale = d3.scaleLinear().domain(popExtent).range([mapHeight2, 0]);
-  let leftAxis = d3.axisLeft(popScale);
-  svg2.append('g')
-      .attr('class', 'y axis')
-      .attr('transform',`translate(${margin2.left},${margin2.top})`) 
-      .call(leftAxis);
-  let leftGridlines = d3.axisLeft(popScale)
-                      .tickSize(-mapWidth2)
-                      .tickFormat('');
-  svg2.append('g').attr('class', 'y gridlines')
-            .attr('transform',`translate(${margin2.left},${margin2.top})`)
-            .call(leftGridlines);
-  // color scale
-  var colorArray = [
-                    "#4682B4",
-                      "#ADD8E6",
-                      "#FF69B4",
-                      "#008000",
-                      "#9933ff"
-                      ];
-  const colorExtent = d3.extent(trees2, d => d.borough);
-  const colorScale = d3.scaleOrdinal()
-                        .domain(colorExtent)//give it all the data not just extent to binning
-                        .range(colorArray)
-  // data point
-  Object.keys(blockPopulation).forEach((d,i)=>
-  {
-    if(blockTreeNum[d]!=undefined){
-      scatterPlot.append('circle')
-                .attr('cx', treeScale(blockTreeNum[d]))
-                .attr('cy', popScale(Number(blockPopulation[d])))
-                .attr('r', 5)
-                .attr('opacity', 0.9)
-                .attr('index', i)
-                .style('fill', colorScale(blockBorough[d]));
+      blockTreeNum[trees2[i].nta]+=1;
+      blockBorough[trees2[i].nta]=(trees2[i].borough);
 
     }
+    let CDCode = "";
+    let CDOriginal = "";
     
-  });
-  svg2.append("text")
-    .attr("class", "x label")
-    .attr("text-anchor", "end")
-    .attr("x", width2/2)
-    .attr("y", height2-10)
-    .text("Number of trees");
-  svg2.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 0)
-      .attr("x",0 - (height2 / 2))
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .text("NYC Poverty rate");
-  let boroughList = ['Bronx', 'Staten Island','Brooklyn','Queens','Manhattan']
-  svg2.selectAll("mydots")
-    .data(boroughList)
-    .enter()
-    .append("circle")
-    .attr("cx", 100)
-    .attr("cy", function(d,i){ return 620 + i*17}) // 100 is where the first dot appears. 25 is the distance between dots
-    .attr("r", 5)
-    .style("fill", function(d){ return colorScale(d)})
-  // console.log(colorExtent)
-// Add one dot in the legend for each name.
-  svg2.selectAll("mylabels")
-    .data(boroughList)
-    .enter()
-    .append("text")
-    .attr("x", 120)
-    .attr("y", function(d,i){ return 620 + i*17}) // 100 is where the first dot appears. 25 is the distance between dots
-    .style("fill", function(d){ return colorScale(d)})
-    .text(function(d){ return d})
-    .attr("text-anchor", "left")
-    .style("alignment-baseline", "middle")
+    for(let i=0; i<nycData.length;i++)
+    {
+      CDOriginal = nycData[i].CD.split(' ');
+      
+      if ((CDOriginal[3].length)==1) 
+      {
+        CDCode = CDOriginal[0]+"0"+CDOriginal[3];
+      }
+      else CDCode = CDOriginal[0]+CDOriginal[3];
+      blockPopulation[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
 
+      if ((CDOriginal.length)==6) 
+      {
+        if ((CDOriginal[5].length)==1) 
+        {
+          CDCode = CDOriginal[0]+"0"+CDOriginal[5];
+        }
+        else CDCode = CDOriginal[0]+CDOriginal[5];
+      }
+      blockPopulation[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
+      
+    }
 
-};//finish request data
-requestData2();
+    const treeExtent = d3.extent(Object.values(blockTreeNum));
+    const treeScale = d3.scaleLinear().domain([0,1530]).range([0, mapWidth2]);
+    let bottomAxis = d3.axisBottom(treeScale).ticks(6)
+    svg2.append('g')
+        .attr('class', 'x axis')
+        .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top})`)
+        .call(bottomAxis);
+    let bottomGridlines = d3.axisBottom(treeScale)
+                            .tickSize(-mapHeight2)
+                            .tickFormat('')
+                            .ticks(6);
+    svg2.append('g').attr('class', 'x gridlines')
+                    .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top})`)
+                    .call(bottomGridlines);
+
+    //y Scale
+    pop_data = (d3.map(nycData,d=>d.NYC_Poverty_Rate)).map(Number)
+    
+    const popExtent = d3.extent(pop_data);
+    const popScale = d3.scaleLinear().domain(popExtent).range([mapHeight2, 0]);
+    let leftAxis = d3.axisLeft(popScale);
+    svg2.append('g')
+        .attr('class', 'y axis')
+        .attr('transform',`translate(${margin2.left},${margin2.top})`) 
+        .call(leftAxis);
+    let leftGridlines = d3.axisLeft(popScale)
+                        .tickSize(-mapWidth2)
+                        .tickFormat('');
+    svg2.append('g').attr('class', 'y gridlines')
+              .attr('transform',`translate(${margin2.left},${margin2.top})`)
+              .call(leftGridlines);
+    // color scale
+    var colorArray = [
+                      "#4682B4",
+                        "#ADD8E6",
+                        "#FF69B4",
+                        "#008000",
+                        "#9933ff"
+                        ];
+    const colorExtent = d3.extent(trees2, d => d.borough);
+    const colorScale = d3.scaleOrdinal()
+                          .domain(colorExtent)//give it all the data not just extent to binning
+                          .range(colorArray)
+    // data point
+    Object.keys(blockPopulation).forEach((d,i)=>
+    {
+      if(blockTreeNum[d]!=undefined){
+        scatterPlot.append('circle')
+                  .attr('cx', treeScale(blockTreeNum[d]))
+                  .attr('cy', popScale(Number(blockPopulation[d])))
+                  .attr('r', 5)
+                  .attr('opacity', 0.9)
+                  .attr('index', i)
+                  .style('fill', colorScale(blockBorough[d]));
+
+      }
+      
+    });
+    svg2.append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "end")
+      .attr("x", width2/2)
+      .attr("y", height2-10)
+      .text("Number of trees");
+    svg2.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0)
+        .attr("x",0 - (height2 / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("NYC Poverty rate");
+    let boroughList = ['Bronx', 'Staten Island','Brooklyn','Queens','Manhattan']
+    svg2.selectAll("mydots")
+      .data(boroughList)
+      .enter()
+      .append("circle")
+      .attr("cx", 100)
+      .attr("cy", function(d,i){ return 620 + i*17}) // 100 is where the first dot appears. 25 is the distance between dots
+      .attr("r", 5)
+      .style("fill", function(d){ return colorScale(d)})
+    // console.log(colorExtent)
+
+    // Add one dot in the legend for each name.
+    svg2.selectAll("mylabels")
+      .data(boroughList)
+      .enter()
+      .append("text")
+      .attr("x", 120)
+      .attr("y", function(d,i){ return 620 + i*17}) // 100 is where the first dot appears. 25 is the distance between dots
+      .style("fill", function(d){ return colorScale(d)})
+      .text(function(d){ return d})
+      .attr("text-anchor", "left")
+      .style("alignment-baseline", "middle")
+  };
+  requestData2();
 
 </script>
 </html>
