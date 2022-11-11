@@ -85,6 +85,25 @@
         AirDict[d['community_district'] ] = d['particle_concentration'] 
     });
 
+    function boroMap(d){
+      if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101)
+      {
+        return "Manhattan"
+      }
+      if(parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501){
+        return "Staten Island"
+      }
+      if(parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201){
+        return "The Bronx"
+      }
+      if(parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301){
+        return "Brooklyn"
+      }
+      if(parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401){
+        return "Queens"
+      }
+       else return "Undefined"
+    };
     airExtent = d3.extent(air, d => Number(d['particle_concentration']));
     let airColorScale = d3.scaleLinear()
                           .domain(airExtent)
@@ -157,25 +176,32 @@
                       .attr("class","tooltip")
                       .attr("visibility","hidden");
     tooltip.append("rect")
-            .attr("fill", "black")
+            .attr("fill", "darkgreen")
             .attr("opacity", 1)
             .attr("x", -20)
             .attr("y", 0)
             .attr("width", 180)
-            .attr("height", 40)
+            .attr("height", 70)
     let textbox = tooltip.append("text")
                       .text('halo')
                       .attr("fill", "white")
                       .attr("text-anchor","middle")
                       .attr("alignment-baseline","hanging")
                       .attr("x", 60)
-                      .attr("y", 2);
+                      .attr("y", 7);
     let textbox2 = tooltip.append("text")
                       .attr("fill", "white")
                       .attr("text-anchor","middle")
                       .attr("alignment-baseline","hanging")
                       .attr("x", 60)
-                      .attr("y", 22);
+                      .attr("y", 27);
+
+    let textbox3 = tooltip.append("text")
+                      .attr("fill", "white")
+                      .attr("text-anchor","middle")
+                      .attr("alignment-baseline","hanging")
+                      .attr("x", 60)
+                      .attr("y", 47);
 
 
     function mouseEntersCommunity() {
@@ -187,6 +213,10 @@
       let title = d3.select(this).datum().properties.boro_cd;
       textbox.text("Community: " + title).attr("font-size","15px");
       textbox2.text("Air Particles: " + String(AirDict[title]).slice(0, 5)).attr("font-size","15px");
+
+      let boro = boroMap(d3.select(this).datum())
+      console.log(boro)
+      textbox3.text("Borough: " + boro).attr("font-size","15px")
 
       let bounds = path.bounds( current.datum() )
       let xPos = (bounds[0][0]+bounds[1][0])/2.0 + 50;
