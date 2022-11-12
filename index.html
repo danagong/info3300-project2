@@ -247,9 +247,9 @@
   const margin2 = { top: 30, right: 50, bottom: 100, left:80};
   const mapWidth2 = width2 - margin2.left - margin2.right;
   const mapHeight2 = height2 - margin2.top - margin2.bottom;
+
   const scatterPlot = svg2.append("g")
                   .attr("transform","translate("+margin2.left+","+margin2.top+")");
-
                   
   const requestData2 = async function() {
 
@@ -339,11 +339,13 @@
                           .domain(colorExtent)//give it all the data not just extent to binning
                           .range(colorArray)
     // data point
+
+    let viewport2 = scatterPlot.append("g");
     
     Object.keys(blockPopulation).forEach((d,i)=>
     {
       if(blockTreeNum[d]!=undefined){
-        scatterPlot.append('circle')
+        viewport2.append('circle')
                   .attr('cx', treeScale(blockTreeNum[d]))
                   .attr('cy', popScale(Number(blockPopulation[d])))
                   .attr('r', 5)
@@ -384,7 +386,7 @@
 
     function plotZoomed(event) {    
 
-      //svg2.attr("transform", event.transform);
+      viewport2.attr("transform", event.transform);
       //cannot access circles
 
       leftAxis.scale(event.transform.rescaleY(popScale))
