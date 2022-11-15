@@ -120,7 +120,7 @@
   const requestData = async function() {
     // Import data sets
     const nyc = await d3.json("data/map.geojson");
-    const trees = await d3.csv("data/trees.csv");
+    const trees = await d3.csv("trees.csv");
     const air = await d3.csv("data/air.csv");
     const income = await d3.csv("data/neighborhood_income.csv");
     console.log(nyc);
@@ -160,12 +160,14 @@
 
     for(let i=0; i<trees.length;i++)
     {
-      let CD_num = trees[i].boro_ct.slice(0,3)//CD 02=>202
+      let CD_num = trees[i]['community board']
       if (!blockTreeNum[CD_num]){
         blockTreeNum[CD_num] = 0;
       }
       blockTreeNum[CD_num]+=1; // Accumulate tree
+      // console.log(trees[i])
     }
+    
     let CDCode = "";
     let CDOriginal = "";
 
@@ -370,6 +372,7 @@
     });
     Object.keys(blockTreeNum).forEach((d,i)=>
     {
+      // console.log(d.toString(),AirDict[d.toString()],blockTreeNum[d.toString()])
       if(AirDict[d.toString()]!=undefined){
           viewport4.append('circle')
                     .attr('cx', treeScale(blockTreeNum[d.toString()]))
