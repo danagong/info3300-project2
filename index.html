@@ -165,23 +165,29 @@
     for(let i=0; i<nycData.length;i++)
     {
       CDOriginal = nycData[i].CD.split(' ');
-      
-      if ((CDOriginal[3].length)==1) 
+      console.log(CDOriginal)
+      //add the first CD data
+      if ((CDOriginal[3].length)==1)//add 0: BX community district 1 => BX01
       {
         CDCode = CD_to_num[CDOriginal[0]]+"0"+CDOriginal[3];
       }
-      else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[3];
+      else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[3];// BX community district 11 => BX11
+      if(blockPoverty[CDCode]==undefined) blockPoverty[CDCode] = []
+      blockPoverty[CDCode].push(Number(nycData[i].NYC_Poverty_Rate));//add the first CD data
 
-      if ((CDOriginal.length)==6) 
+      // if there is more than one CD data in this row
+      if ((CDOriginal.length)==6)  //BX community district 1 & 2 => need to add BX02
       {
-        if ((CDOriginal[5].length)==1) 
+        if ((CDOriginal[5].length)==1) //BX community district 1 & 2 => add BX02
         {
           CDCode = CD_to_num[CDOriginal[0]]+"0"+CDOriginal[5];
         }
-        else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[5];
+        else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[5];//BX community district 1 & 11 => add BX11
+        if(blockPoverty[CDCode]==undefined) blockPoverty[CDCode] = []
+        blockPoverty[CDCode].push(Number(nycData[i].NYC_Poverty_Rate));// add the second CD data
       }
-      if(blockPoverty[CDCode]==undefined) blockPoverty[CDCode] = []
-      blockPoverty[CDCode].push(Number(nycData[i].NYC_Poverty_Rate));
+      
+     
       
     }
     //tree scale
