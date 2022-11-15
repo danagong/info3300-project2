@@ -180,7 +180,8 @@
         }
         else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[5];
       }
-      blockPoverty[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
+      if(blockPoverty[CDCode]==undefined) blockPoverty[CDCode] = []
+      blockPoverty[CDCode].push(Number(nycData[i].NYC_Poverty_Rate));
       
     }
     //tree scale
@@ -246,7 +247,7 @@
       if(blockTreeNum[d]!=undefined){
         viewport2.append('circle')
                   .attr('cx', treeScale(blockTreeNum[d.toString()]))
-                  .attr('cy', popScale(Number(blockPoverty[d.toString()])))
+                  .attr('cy', popScale(d3.mean(blockPoverty[d.toString()])))
                   .attr('r', 4)
                   .attr('opacity', 0.9)
                   .attr('index', i)
@@ -255,7 +256,7 @@
       }
       viewport3.append('circle')
                   .attr('cx', airScale(Number(AirDict[d.toString()])))
-                  .attr('cy', popScale(Number(blockPoverty[d.toString()])))
+                  .attr('cy', popScale(d3.mean(blockPoverty[d.toString()])))
                   .attr('r', 4)
                   .attr('opacity', 0.9)
                   .attr('index', i)
@@ -530,10 +531,8 @@
       //scatterplot interaction
       
       let treePos = treeScale(blockTreeNum[title.toString()]);
-      let povertyPos = popScale(Number(blockPoverty[title.toString()]));
+      let povertyPos = popScale(d3.mean(blockPoverty[title.toString()]));
       let airPos = airScale(Number(AirDict[title.toString()]));
-      console.log(airPos)
-      console.log(blockTreeNum[title.toString()],Number(blockPopulation[title.toString()]))
       if (treePos!=undefined && povertyPos !=undefined)
       {
         scatterplotCircle2.style("visibility","visible")
