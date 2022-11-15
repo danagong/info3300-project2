@@ -51,8 +51,9 @@
         <p> Graph 2: A scatterplot of NY communities with X axis as its count of trees and Y axis as its poverty rate, the
             circles are colored by their borough. Zoom and pan on the map to see the circle's precise points on the plot.
         </p>
-        <svg id="nyc-scatterplot" height="270" width="560" ></svg>
-        <svg id="nyc-scatterplot-poverty-air" height="270" width="560"></svg>
+        <svg id="scatterplot-poverty-trees" height="270" width="560" ></svg>
+        <svg id="scatterplot-poverty-air" height="270" width="560"></svg>
+        <svg id="scatterplot-air-trees" height="270" width="560"></svg>
       </div>
     </div>
   </div>
@@ -68,207 +69,168 @@
   const mapHeight = height - margin.top - margin.bottom;
   const map = svg.append("g").attr("transform","translate("+margin.left+","+margin.top+")");
 
-  //scatterplot1 Poverty vs trees
-  const svg2 = d3.select("#nyc-scatterplot");
+  // Scatterplot svgs
+  const scatterMargin = { top: 30, right: 80, bottom: 40, left:50};
+
+  // Scatterplot of Poverty vs Trees
+  const svg2 = d3.select("#scatterplot-poverty-trees");
   const width2 = svg2.attr("width");
   const height2 = svg2.attr("height");
-  const margin2 = { top: 30, right: 80, bottom: 40, left:50};
-  const mapWidth2 = width2 - margin2.left - margin2.right;
-  const mapHeight2 = height2 - margin2.top - margin2.bottom;
+  const scatterWidth2 = width2 - scatterMargin.left - scatterMargin.right;
+  const scatterHeight2 = height2 - scatterMargin.top - scatterMargin.bottom;
 
   const scatterPlot2 = svg2.append("g")
-                  .attr("transform","translate("+margin2.left+","+margin2.top+")");
+                  .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")");
   let viewport2 = scatterPlot2.append("g");
 
-  //scatterplot1 Poverty vs trees
-  const svg3 = d3.select("#nyc-scatterplot-poverty-air");
+  // Scatterplot of Poverty vs Air quality
+  const svg3 = d3.select("#scatterplot-poverty-air");
   const width3 = svg3.attr("width");
   const height3 = svg3.attr("height");
-  const margin3 = { top: 30, right: 80, bottom: 40, left:50};
-  const mapWidth3 = width3 - margin3.left - margin3.right;
-  const mapHeight3 = height3 - margin3.top - margin3.bottom;
+  const scatterWidth3 = width3 - scatterMargin.left - scatterMargin.right;
+  const scatterHeight3 = height3 - scatterMargin.top - scatterMargin.bottom;
 
   const scatterPlot3 = svg3.append("g")
-                  .attr("transform","translate("+margin3.left+","+margin3.top+")");
+                  .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")");
   let viewport3 = scatterPlot3.append("g");
-  
 
-  // let instructions = map.append("g").attr("transform", "translate(50, 20)");
+  // Scatterplot of Air quality vs Trees
+  const svg4 = d3.select("#scatterplot-air-trees");
+  const width4 = svg4.attr("width");
+  const height4 = svg4.attr("height");
+  const scatterWidth4 = width4 - scatterMargin.left - scatterMargin.right;
+  const scatterHeight4 = height4 - scatterMargin.top - scatterMargin.bottom;
 
-  // instructions.append("rect")
-  //           .attr("fill", "lightgreen")
-  //           .attr("class", "instructions")
-  //           .attr("width", 350)
-  //           .attr("height", 200);
-  
-  // instructions.append("text")
-  //             .attr("alignment-baseline","hanging")
-  //             .attr("x", 100)
-  //             .attr("y", 20)
-              //.text("Instruction Block:");
+  const scatterPlot4 = svg4.append("g")
+                  .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")");
+  let viewport4 = scatterPlot4.append("g");
 
-  // let legend = map.append("g").attr("transform", "translate(50, 250)");
 
   const requestData = async function() {
     // Import data sets
     const nyc = await d3.json("data/map.geojson");
     const trees = await d3.csv("data/trees.csv");
     const air = await d3.csv("data/air.csv");
+    const income = await d3.csv("data/neighborhood_income.csv");
     console.log(nyc);
     console.log(trees);
     console.log(air);
+    console.log(income);
 
     // Compile air quality information
     var AirDict = {};
     air.forEach(d => {
         AirDict[d['community_district'] ] = d['particle_concentration'] 
     });
-    // Import scatterplot dataset
-    const trees2 = await d3.csv("data/trees.csv");
-    const nycData = await d3.csv("data/neighborhood_income.csv");
-    console.log(nycData)
-    //Map BX10 to 210, and so on
+
+    // Map BX10 to 210, and so on
     let CD_to_num = {"BX":"2","BK":"3","MN":"1","QN":"4","SI":"5"}
     let blockTreeNum = {};
     let blockPoverty = {};
-    function boroMap2(d){
+    function boroMap(d){
       if(d<=112 && d>=101)
       {
-        return "#4682B4"//"Manhattan"
+        return "#4682B4" // "Manhattan"
       }
       if(d<=503 && d>=501){
-        return "#ADD8E6"//"Staten Island"
+        return "#ADD8E6" // "Staten Island"
       }
       if(d<=212 && d>=201){
-        return "#FF69B4"//"The Bronx"
+        return "#FF69B4" // "The Bronx"
       }
       if(d<=318 && d>=301){
-        return "#008000"//"Brooklyn"
+        return "#008000"// "Brooklyn"
       }
       if(d<=414 && d>=401){
-        return "#9933ff"//"Queens"
+        return "#9933ff"// "Queens"
       }
        else return "Undefined"
     };
-    for(let i=0; i<trees2.length;i++)
+
+    for(let i=0; i<trees.length;i++)
     {
-      let CD_num = CD_to_num[trees2[i].nta.slice(0,2)]+trees2[i].nta.slice(-2)//CD 02=>202
+      let CD_num = CD_to_num[trees[i].nta.slice(0,2)]+trees[i].nta.slice(-2)//CD 02=>202
       if (!blockTreeNum[CD_num]){
         blockTreeNum[CD_num] = 0;
       }
-      blockTreeNum[CD_num]+=1;//accumulate tree
-      // blockBorough[CD_num]=(trees2[i].borough);
+      blockTreeNum[CD_num]+=1; // Accumulate tree
     }
+
     let CDCode = "";
     let CDOriginal = "";
-    //translate 
-    for(let i=0; i<nycData.length;i++)
+
+    // Translate 
+    for(let i=0; i<income.length;i++)
     {
-      CDOriginal = nycData[i].CD.split(' ');
+      CDOriginal = income[i].CD.split(' ');
       console.log(CDOriginal)
-      //add the first CD data
+
+      // Add the first CD data
       if ((CDOriginal[3].length)==1)//add 0: BX community district 1 => BX01
       {
         CDCode = CD_to_num[CDOriginal[0]]+"0"+CDOriginal[3];
       }
       else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[3];// BX community district 11 => BX11
       if(blockPoverty[CDCode]==undefined) blockPoverty[CDCode] = []
-      blockPoverty[CDCode].push(Number(nycData[i].NYC_Poverty_Rate));//add the first CD data
+      blockPoverty[CDCode].push(Number(income[i].NYC_Poverty_Rate));//add the first CD data
 
-      // if there is more than one CD data in this row
-      if ((CDOriginal.length)==6)  //BX community district 1 & 2 => need to add BX02
+      // If there is more than one CD data in this row
+      if ((CDOriginal.length)==6)  // BX community district 1 & 2 => need to add BX02
       {
-        if ((CDOriginal[5].length)==1) //BX community district 1 & 2 => add BX02
+        if ((CDOriginal[5].length)==1) // BX community district 1 & 2 => add BX02
         {
           CDCode = CD_to_num[CDOriginal[0]]+"0"+CDOriginal[5];
         }
-        else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[5];//BX community district 1 & 11 => add BX11
+        else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[5]; // BX community district 1 & 11 => add BX11
         if(blockPoverty[CDCode]==undefined) blockPoverty[CDCode] = []
-        blockPoverty[CDCode].push(Number(nycData[i].NYC_Poverty_Rate));// add the second CD data
+        blockPoverty[CDCode].push(Number(income[i].NYC_Poverty_Rate)); // Add the second CD data
       }
-      
-     
-      
     }
-    //tree scale
+
+    // Set up scales
     const treeExtent = d3.extent(Object.values(blockTreeNum));
-    const treeScale = d3.scaleLinear().domain([0,1530]).range([0, mapWidth2]);
-    let bottomAxis = d3.axisBottom(treeScale).ticks(6)
+    const treeScale = d3.scaleLinear().domain([0,1530]).range([0, scatterWidth2]); // Tree X scale
+
+    pov_data = (d3.map(income,d=>d.NYC_Poverty_Rate)).map(Number)
+    const povExtent = d3.extent(pov_data);
+    const povScale = d3.scaleLinear().domain(povExtent).range([scatterHeight2, 0]); // Poverty Y scale
+
+    const airExtent = d3.extent(air, d => Number(d['particle_concentration']));
+    const airXScale = d3.scaleLinear().domain(airExtent).range([0,scatterWidth3]); // Air X scale
+    const airYScale = d3.scaleLinear().domain(airExtent).range([scatterHeight4, 0]); // Air Y scale
+
+
+    // Create scatterplot axes
+    let treeBottomAxis = d3.axisBottom(treeScale).ticks(6)
+    let airBottomAxis = d3.axisBottom(airXScale).ticks(6)
+    let povLeftAxis = d3.axisLeft(povScale).ticks(4);
+    let airLeftAxis = d3.axisLeft(airYScale).ticks(4);
+
+    // Scatterplot of Poverty vs Trees
     svg2.append('g')
-        .attr('class', 'x axis2')
-        .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top})`)
-        .call(bottomAxis);
-    let bottomGridlines = d3.axisBottom(treeScale)
-                            .tickSize(-mapHeight2)
+        .attr('class', 'xAxis2')
+        .attr('transform',`translate(${scatterMargin.left},${scatterHeight2+scatterMargin.top})`)
+        .call(treeBottomAxis);
+    let bottomGridlines2 = d3.axisBottom(treeScale)
+                            .tickSize(-scatterHeight2)
                             .tickFormat('')
                             .ticks(6);
-    svg2.append('g').attr('class', 'x gridlines2')
-                    .attr('transform',`translate(${margin2.left},${mapHeight2+margin2.top})`)
-                    .call(bottomGridlines);
+    svg2.append('g').attr('class', 'xGridlines2')
+                    .attr('transform',`translate(${scatterMargin.left},${scatterHeight2+scatterMargin.top})`)
+                    .call(bottomGridlines2);
 
-
-    //poverty Scale
-    pop_data = (d3.map(nycData,d=>d.NYC_Poverty_Rate)).map(Number)
-
-    const popExtent = d3.extent(pop_data);
-    const popScale = d3.scaleLinear().domain(popExtent).range([mapHeight2, 0]);
-    let leftAxis = d3.axisLeft(popScale).ticks(4);
     svg2.append('g')
-        .attr('class', 'y axis2')
-        .attr('transform',`translate(${margin2.left},${margin2.top})`) 
-        .call(leftAxis);
-    svg3.append('g')
-        .attr('class', 'y axis3')
-        .attr('transform',`translate(${margin2.left},${margin2.top})`) 
-        .call(leftAxis);
-    let leftGridlines = d3.axisLeft(popScale)
-                        .tickSize(-mapWidth2)
+        .attr('class', 'yAxis2')
+        .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`) 
+        .call(povLeftAxis);
+    let leftGridlines2 = d3.axisLeft(povScale)
+                        .tickSize(-scatterWidth2)
                         .tickFormat('')
                         .ticks(4);
-    svg2.append('g').attr('class', 'y gridlines2')
-              .attr('transform',`translate(${margin2.left},${margin2.top})`)
-              .call(leftGridlines);
-    svg3.append('g').attr('class', 'y gridlines3')
-              .attr('transform',`translate(${margin2.left},${margin2.top})`)
-              .call(leftGridlines);
-    // Air scale
-    const airExtent = d3.extent(air, d => Number(d['particle_concentration']));
-    const airScale = d3.scaleLinear().domain(airExtent).range([0,mapWidth3]);
-
-    let airBottomAxis = d3.axisBottom(airScale).ticks(6)
-    svg3.append('g')
-        .attr('class', 'x axis3')
-        .attr('transform',`translate(${margin3.left},${mapHeight3+margin3.top})`)
-        .call(bottomAxis);
-    let airBottomGridlines = d3.axisBottom(airScale)
-                            .tickSize(-mapHeight3)
-                            .tickFormat('')
-                            .ticks(6);
-    svg3.append('g').attr('class', 'x gridlines3')
-                    .attr('transform',`translate(${margin3.left},${mapHeight3+margin3.top})`)
-                    .call(bottomGridlines);
-    //data points
-    Object.keys(blockPoverty).forEach((d,i)=>
-    {
-      if(blockTreeNum[d]!=undefined){
-        viewport2.append('circle')
-                  .attr('cx', treeScale(blockTreeNum[d.toString()]))
-                  .attr('cy', popScale(d3.mean(blockPoverty[d.toString()])))
-                  .attr('r', 4)
-                  .attr('opacity', 0.9)
-                  .attr('index', i)
-                  .style('fill', boroMap2(d));
-
-      }
-      viewport3.append('circle')
-                  .attr('cx', airScale(Number(AirDict[d.toString()])))
-                  .attr('cy', popScale(d3.mean(blockPoverty[d.toString()])))
-                  .attr('r', 4)
-                  .attr('opacity', 0.9)
-                  .attr('index', i)
-                  .style('fill', boroMap2(d));
-      
-    });
+    svg2.append('g').attr('class', 'yGridlines2')
+              .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`)
+              .call(leftGridlines2);
+    
     svg2.append("text")
       .attr("class", "x label")
       .attr("text-anchor", "end")
@@ -284,6 +246,32 @@
         .style("text-anchor", "middle")
         .style("font-size", "13")
         .text("NYC Poverty rate");
+
+    
+    // Scatterplot of Poverty vs Air Quality
+    svg3.append('g')
+        .attr('class', 'xAxis3')
+        .attr('transform',`translate(${scatterMargin.left},${scatterHeight3+scatterMargin.top})`)
+        .call(airBottomAxis);
+    let bottomGridlines3 = d3.axisBottom(airXScale)
+                            .tickSize(-scatterHeight3)
+                            .tickFormat('')
+                            .ticks(6);
+    svg3.append('g').attr('class', 'xGridlines3')
+                    .attr('transform',`translate(${scatterMargin.left},${scatterHeight3+scatterMargin.top})`)
+                    .call(bottomGridlines3);
+
+    svg3.append('g')
+        .attr('class', 'yAxis3')
+        .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`) 
+        .call(povLeftAxis);
+    let leftGridlines3 = d3.axisLeft(povScale)
+                    .tickSize(-scatterWidth3)
+                    .tickFormat('')
+                    .ticks(4);
+    svg3.append('g').attr('class', 'yGridlines3')
+          .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`)
+          .call(leftGridlines3);
     
     svg3.append("text")
       .attr("class", "x label")
@@ -300,79 +288,153 @@
         .style("text-anchor", "middle")
         .style("font-size", "13")
         .text("NYC Poverty rate");
-    // legend of scatter plot1
+
+    // Scatterplot of Poverty vs Air Quality
+    svg4.append('g')
+        .attr('class', 'xAxis4')
+        .attr('transform',`translate(${scatterMargin.left},${scatterHeight4+scatterMargin.top})`)
+        .call(treeBottomAxis);
+    let bottomGridlines4 = d3.axisBottom(treeScale)
+                            .tickSize(-scatterHeight4)
+                            .tickFormat('')
+                            .ticks(6);
+    svg4.append('g').attr('class', 'xGridlines4')
+                    .attr('transform',`translate(${scatterMargin.left},${scatterHeight4+scatterMargin.top})`)
+                    .call(bottomGridlines4);
+
+    svg4.append('g')
+        .attr('class', 'yAxis4')
+        .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`) 
+        .call(airLeftAxis);
+    let leftGridlines4 = d3.axisLeft(airYScale)
+                    .tickSize(-scatterWidth4)
+                    .tickFormat('')
+                    .ticks(4);
+    svg4.append('g').attr('class', 'yGridlines4')
+          .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`)
+          .call(leftGridlines4);
+  
+    svg4.append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "end")
+      .attr("x", width2/2)
+      .attr("y", height2-10)
+      .style("font-size", "13")
+      .text("Number of trees");
+    svg4.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0)
+        .attr("x",0 - (height3 / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("font-size", "13")
+        .text("Air quality (particle concentration)");
+
+    // Data points
+    Object.keys(blockPoverty).forEach((d,i)=>
+    {
+      if(blockTreeNum[d]!=undefined){
+        viewport2.append('circle')
+                  .attr('cx', treeScale(blockTreeNum[d.toString()]))
+                  .attr('cy', povScale(d3.mean(blockPoverty[d.toString()])))
+                  .attr('r', 4)
+                  .attr('opacity', 0.9)
+                  .attr('index', i)
+                  .style('fill', boroMap(d));
+
+      }
+      viewport3.append('circle')
+                  .attr('cx', airXScale(Number(AirDict[d.toString()])))
+                  .attr('cy', povScale(d3.mean(blockPoverty[d.toString()])))
+                  .attr('r', 4)
+                  .attr('opacity', 0.9)
+                  .attr('index', i)
+                  .style('fill', boroMap(d));
+      if(blockTreeNum[d]!=undefined){
+        viewport4.append('circle')
+                  .attr('cx', treeScale(blockTreeNum[d.toString()]))
+                  .attr('cy', airYScale(Number(AirDict[d.toString()])))
+                  .attr('r', 4)
+                  .attr('opacity', 0.9)
+                  .attr('index', i)
+                  .style('fill', boroMap(d));
+      }
+    });
+
+    // Scatter plot Legend
     let boroughColor = ["#4682B4", "#ADD8E6","#FF69B4","#008000","#9933ff"]
     let boroughList = ['Manhattan', 'Staten Island','Bronx','Brooklyn','Queens']
     svg2.append("g").selectAll("mydots")
       .data(boroughColor)
       .enter()
       .append("circle")
-      .attr("cx", width2*15/17)
-      .attr("cy", function(d,i){ return height2*2/3 + i*17}) // 100 is where the first dot appears. 25 is the distance between dots
+      .attr("cx", (width2 * 15)/17)
+      .attr("cy", (d,i) => (height2*2)/3 + i*17) // 100 is where the first dot appears. 25 is the distance between dots
       .attr("r", 3)
-      .style("fill", function(d){ return (d)})
+      .style("fill", d => d);
     svg2.append("g").selectAll("scatterplot text")
       .data(boroughList)
       .enter()
       .append("text")
-      .attr("x", width2*15/17+5)
-      .attr("y", function(d,i){ return height2*2/3+5 + i*17}) // 100 is where the first dot appears. 25 is the distance between dots
-      .style("fill", function(d){ return (d)})
+      .attr("x", (width2*15)/17 + 5)
+      .attr("y", (d,i) => (height2*2)/3 + 5 + i*17) // 100 is where the first dot appears. 25 is the distance between dots
+      .style("fill", d => d)
       .style("font-size", "10")
-      .text(function(d){ return (d)});
+      .text(d => d);
 
+    // Scatter plot zoom
     var plotZoom2 = d3.zoom().scaleExtent([1,3]).on("zoom", plotZoomed2);
     var plotZoom3 = d3.zoom().scaleExtent([1,3]).on("zoom", plotZoomed3);
+    var plotZoom4 = d3.zoom().scaleExtent([1,3]).on("zoom", plotZoomed4);
 
     svg2.call(plotZoom2);
     svg3.call(plotZoom3);
+    svg4.call(plotZoom4);
 
     function plotZoomed2(event) {    
-
       viewport2.attr("transform", event.transform);
-      //cannot access circles
 
-      leftAxis.scale(event.transform.rescaleY(popScale))
-      bottomAxis.scale(event.transform.rescaleX(treeScale))
-      leftGridlines.scale(event.transform.rescaleY(popScale))
-      bottomGridlines.scale(event.transform.rescaleX(treeScale))
+      povLeftAxis.scale(event.transform.rescaleY(povScale))
+      treeBottomAxis.scale(event.transform.rescaleX(treeScale))
+      leftGridlines2.scale(event.transform.rescaleY(povScale))
+      bottomGridlines2.scale(event.transform.rescaleX(treeScale))
 
-      d3.select("g.y.axis2").call(leftAxis);
-      d3.select("g.x.axis2").call(bottomAxis);
-      d3.select("g.y.gridlines2").call(leftGridlines);
-      d3.select("g.x.gridlines2").call(bottomGridlines);
+      d3.select("g.yAxis2").call(povLeftAxis);
+      d3.select("g.xAxis2").call(treeBottomAxis);
+      d3.select("g.yGridlines2").call(leftGridlines2);
+      d3.select("g.xGridlines2").call(bottomGridlines2);
     }
+
     function plotZoomed3(event) {    
-
       viewport3.attr("transform", event.transform);
-      //cannot access circles
 
-      leftAxis.scale(event.transform.rescaleY(popScale))
-      airBottomAxis.scale(event.transform.rescaleX(airScale))
-      leftGridlines.scale(event.transform.rescaleY(popScale))
-      airBottomGridlines.scale(event.transform.rescaleX(airScale))
+      povLeftAxis.scale(event.transform.rescaleY(povScale))
+      airBottomAxis.scale(event.transform.rescaleX(airXScale))
+      leftGridlines3.scale(event.transform.rescaleY(povScale))
+      bottomGridlines3.scale(event.transform.rescaleX(airXScale))
       
-      d3.select("g.y.axis3").call(leftAxis);
-      d3.select("g.x.axis3").call(airBottomAxis);
-      d3.select("g.y.gridlines3").call(leftGridlines);
-      d3.select("g.x.gridlines3").call(airBottomGridlines);
+      d3.select("g.yAxis3").call(povLeftAxis);
+      d3.select("g.xAxis3").call(airBottomAxis);
+      d3.select("g.yGridlines3").call(leftGridlines3);
+      d3.select("g.xGridlines3").call(bottomGridlines3);
     }
 
-    // Add one dot in the legend for each name.
-    svg2.selectAll("mylabels")
-      .data(boroughList)
-      .enter()
-      .append("text")
-      .attr("x", 120)
-      .attr("y", function(d,i){ return 620 + i*17}) // 100 is where the first dot appears. 25 is the distance between dots
-      .style("fill", function(d){ return boroMap2(d)})
-      .text(function(d){ return d})
-      .attr("text-anchor", "left")
-      .style("alignment-baseline", "middle")
+    function plotZoomed4(event) {    
+      viewport4.attr("transform", event.transform);
+
+      airLeftAxis.scale(event.transform.rescaleY(airYScale))
+      treeBottomAxis.scale(event.transform.rescaleX(treeScale))
+      leftGridlines4.scale(event.transform.rescaleY(airYScale))
+      bottomGridlines4.scale(event.transform.rescaleX(treeScale))
+
+      d3.select("g.yAxis4").call(airLeftAxis);
+      d3.select("g.xAxis4").call(treeBottomAxis);
+      d3.select("g.yGridlines4").call(leftGridlines4);
+      d3.select("g.xGridlines4").call(bottomGridlines4);
+    }
 
 
-
-    function boroMap(d){
+    function boroMap2(d){
       if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101)
       {
         return "Manhattan"
@@ -391,7 +453,6 @@
       }
        else return "Undefined"
     };
-    // airExtent = d3.extent(air, d => Number(d['particle_concentration']));
     let airColorScale = d3.scaleLinear()
                           .domain(airExtent)
                           .range(['yellow','red']);
@@ -402,8 +463,7 @@
 
     var viewport = map.append("g");
 
-    // diagonal patch pattern for undefined
-
+    // Diagonal patch pattern for undefined
     svg
       .append('defs')
       .append('pattern')
@@ -423,16 +483,11 @@
       .style("stroke-width", 1)
       .attr("d", path)
       .attr("fill", function (d) { 
-          // Manhattan: 101-112
-          // Staten Island: 501-503
-          // Bronx: 201-212
-          // Brooklyn: 301-318
-          // Queens: 401-414
-          if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101 ||
-            parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501 ||
-            parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201 ||
-            parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301 ||
-            parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401) 
+          if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101 || // Manhattan: 101-112
+            parseInt(d.properties.boro_cd)<=503 && parseInt(d.properties.boro_cd)>=501 || // Staten Island: 501-503
+            parseInt(d.properties.boro_cd)<=212 && parseInt(d.properties.boro_cd)>=201 || // Bronx: 201-212
+            parseInt(d.properties.boro_cd)<=318 && parseInt(d.properties.boro_cd)>=301 || // Brooklyn: 301-318
+            parseInt(d.properties.boro_cd)<=414 && parseInt(d.properties.boro_cd)>=401) // Queens: 401-414
               return airColorScale(AirDict[d.properties.boro_cd])
     
           else return "url(#diagonalHatch)"
@@ -459,7 +514,7 @@
     }
 
     // Mouseover interaction
-    //tooltip of Poverty vs trees
+    // Tooltip of Poverty vs trees
     let tooltip_scatter2 = viewport2.append("g")
                       .attr("class","circle")
                       .attr("visibility","hidden");
@@ -470,7 +525,7 @@
                                               .attr("stroke-width",3)
                                               .attr("stroke","black")
                                               .attr('fill-opacity', 0)
-    //tooltip of Poverty vs trees
+    // Tooltip of Poverty vs air qulaity
     let tooltip_scatter3 = viewport3.append("g")
                       .attr("class","circle")
                       .attr("visibility","hidden");
@@ -481,7 +536,19 @@
                                               .attr("stroke-width",3)
                                               .attr("stroke","black")
                                               .attr('fill-opacity', 0)
-    //tooltip of choropleth
+    // Tooltip of Air quality vs trees
+    let tooltip_scatter4 = viewport4.append("g")
+                      .attr("class","circle")
+                      .attr("visibility","hidden");
+    let scatterplotCircle4 = tooltip_scatter4.append("circle")
+                                              .attr('cx', 0)
+                                              .attr('cy', 0)
+                                              .attr('r', 5)
+                                              .attr("stroke-width",3)
+                                              .attr("stroke","black")
+                                              .attr('fill-opacity', 0)
+
+    // Tooltip of choropleth
     let tooltip = map.append("g")
                       .attr("class","tooltip")
                       .attr("visibility","hidden");
@@ -526,7 +593,7 @@
       textbox.text("Community: " + title).attr("font-size","15px");
       textbox2.text("Air Particles: " + String(AirDict[title]).slice(0, 5)).attr("font-size","15px");
 
-      let boro = boroMap(d3.select(this).datum())
+      let boro = boroMap2(d3.select(this).datum())
       textbox3.text("Borough: " + boro).attr("font-size","15px")
 
       let bounds = path.bounds( current.datum() )
@@ -534,19 +601,24 @@
       let yPos = (bounds[1][1] - 50);
       tooltip.attr("transform",`translate(${xPos},${yPos})`);
 
-      //scatterplot interaction
-      
+      // Scatterplot interaction
       let treePos = treeScale(blockTreeNum[title.toString()]);
-      let povertyPos = popScale(d3.mean(blockPoverty[title.toString()]));
-      let airPos = airScale(Number(AirDict[title.toString()]));
+      let povertyPos = povScale(d3.mean(blockPoverty[title.toString()]));
+      let airPosX = airXScale(Number(AirDict[title.toString()]));
+      let airPosY = airYScale(Number(AirDict[title.toString()]));
       if (treePos!=undefined && povertyPos !=undefined)
       {
         scatterplotCircle2.style("visibility","visible")
         tooltip_scatter2.attr("transform",`translate(${treePos},${povertyPos})`);
       }
-      if (airPos!=undefined && povertyPos !=undefined){
+      if (airPosX!=undefined && povertyPos !=undefined){
         scatterplotCircle3.style("visibility","visible")
-        tooltip_scatter3.attr("transform",`translate(${airPos},${povertyPos})`);
+        tooltip_scatter3.attr("transform",`translate(${airPosX},${povertyPos})`);
+      }
+      if (treePos!=undefined && airPosY !=undefined)
+      {
+        scatterplotCircle4.style("visibility","visible")
+        tooltip_scatter4.attr("transform",`translate(${treePos},${airPosY})`);
       }
 
     }
@@ -561,20 +633,21 @@
       //scatterplot1
       scatterplotCircle2.style("visibility","hidden")
       scatterplotCircle3.style("visibility","hidden")
+      scatterplotCircle4.style("visibility","hidden")
     };
 
-  //from Lecture 22.10.03 notes 
+  // From Lecture 22.10.03 notes 
   function drawLegend(legendSelector, legendColorScale) {
-    
     // This code should adapt to a variety of different kinds of color scales
-    //  Credit Prof. Rz if you are basing a legend on this structure, and note PERFORMANCE CONSIDERATIONS
+    // Credit Prof. Rz if you are basing a legend on this structure, and note PERFORMANCE CONSIDERATIONS
     
     // Shrink legend bar by 5 px inwards from sides of SVG
     const offsets = { width: 10,
                       top: 2,
                       bottom: 24 }; 
+        
     // Number of integer 'pixel steps' to draw when showing continuous scales
-    //    Warning, not using a canvas element so lots of rect tags will be created for low stepSize, causing issues with performance -- keep this large
+    // Warning, not using a canvas element so lots of rect tags will be created for low stepSize, causing issues with performance -- keep this large
     const stepSize = 4; 
     // Extend the minmax by 0% in either direction to expose more features by default
     const minMaxExtendPercent = 0;
@@ -584,7 +657,7 @@
     const legendHeight = legend.attr("height");
     const legendBarWidth = legend.attr("width") - (offsets.width * 2);
     const legendMinMax = d3.extent(legendColorScale.domain()); 
-                // recover the min and max values from most kinds of numeric scales
+    // Recover the min and max values from most kinds of numeric scales
     const minMaxExtension = (legendMinMax[1] - legendMinMax[0]) * minMaxExtendPercent;
     const barHeight = legendHeight - offsets.top - offsets.bottom;     
     
@@ -599,9 +672,7 @@
     let bar = legend.append("g")
                     .attr("class", "legend colorbar")
                     .attr("transform", `translate(${offsets.width},${offsets.top})`)
-    
-    // ****** SWITCHES FOR DIFFERENT SCALE TYPES ******
-    
+        
     // Check if we're using a binning scale - if so, we make blocks of color
     if (legendColorScale.hasOwnProperty('thresholds') || legendColorScale.hasOwnProperty('quantiles')) {
       // Get the thresholds
@@ -631,16 +702,6 @@
     }
     // Else if we have a continuous / roundable scale
     else if (legendColorScale.hasOwnProperty('rangeRound')) {
-      // NOTE: The barAxis may round min and max values to make them pretty
-      // ** This also means there is a risk of the legend going beyond scale bounds
-      // We need to use the barAxis min and max just to be sure the bar is complete
-      //    Using barAxis.scale().invert() goes from *axis* pixels to data values easily
-      // ** We also need to create patches for the scale if the labels exceed bounds
-      //     (floating point comparisons risky for small data ranges,but not a big deal
-      //      because patches will be indistinguishable from actual scale bottom)
-      // It's likely that scale clamping will actually do this for us elegantly
-      // ...but better to be safer and patch the regions anyways
-      
       for (let i=0; i<legendBarWidth; i=i+stepSize) {
         
         let center = i+(stepSize/2);
@@ -696,7 +757,6 @@
           .style("fill", legendColorScale( d ) );
       });
     }
-    // DONE w/SWITCH
     
     // Finally, draw legend labels
     legend.append("g")
