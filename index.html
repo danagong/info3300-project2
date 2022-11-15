@@ -45,12 +45,12 @@
         <svg id="nyc-choropleth" height="600" width="800" ></svg>
         <div class="flex-row">
           <div>
-            <h5> Air Quality Scale (particle concentration) </h5>
+            <h5> Air Quality Scale (Particle Concentration - PM2.5) </h5>
             <svg id="colorLegend" height="75" width="400" style="background: #fff" ></svg>
           </div>
           <div style="padding-left: 50px">
             <h5> Scatterplot Legend </h5>
-            <svg id="scatterplotLegend" height="150" width="100" style="background: #fff" ></svg>
+            <svg id="scatterplotLegend" height="160" width="100" style="background: #fff" ></svg>
           </div>
         </div>
       </div>
@@ -141,19 +141,19 @@
     function boroMap(d){
       if(d<=112 && d>=101)
       {
-        return "#4682B4" // "Manhattan"
+        return "#46A716" // "Manhattan"
       }
       if(d<=503 && d>=501){
-        return "#ADD8E6" // "Staten Island"
+        return "#175978" // "Staten Island"
       }
       if(d<=212 && d>=201){
-        return "#FF69B4" // "The Bronx"
+        return "#995D81" // "The Bronx"
       }
       if(d<=318 && d>=301){
-        return "#008000"// "Brooklyn"
+        return "#F7C548"// "Brooklyn"
       }
       if(d<=414 && d>=401){
-        return "#9933ff"// "Queens"
+        return "#EB6534"// "Queens"
       }
        else return "Undefined"
     };
@@ -161,12 +161,13 @@
     for(let i=0; i<trees.length;i++)
     {
       let CD_num = CD_to_num[trees[i].nta.slice(0,2)]+trees[i].nta.slice(-2)//CD 02=>202
+      console.log(CD_num)
       if (!blockTreeNum[CD_num]){
         blockTreeNum[CD_num] = 0;
       }
       blockTreeNum[CD_num]+=1; // Accumulate tree
     }
-
+  
     let CDCode = "";
     let CDOriginal = "";
 
@@ -290,7 +291,7 @@
       .attr("x", width3/2)
       .attr("y", height3-10)
       .style("font-size", "13")
-      .text("Air quality (particle concentration)");
+      .text("Air Quality (Particle Concentration PM2.5)");
     svg3.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 0)
@@ -348,8 +349,8 @@
         viewport2.append('circle')
                   .attr('cx', treeScale(blockTreeNum[d.toString()]))
                   .attr('cy', povScale(d3.mean(blockPoverty[d.toString()])))
-                  .attr('r', 4)
-                  .attr('opacity', 0.9)
+                  .attr('r', 7)
+                  .attr('opacity', 0.8)
                   .attr('index', i)
                   .style('fill', boroMap(d));
 
@@ -357,23 +358,23 @@
       viewport3.append('circle')
                   .attr('cx', airXScale(Number(AirDict[d.toString()])))
                   .attr('cy', povScale(d3.mean(blockPoverty[d.toString()])))
-                  .attr('r', 4)
-                  .attr('opacity', 0.9)
+                  .attr('r', 7)
+                  .attr('opacity', 0.8)
                   .attr('index', i)
                   .style('fill', boroMap(d));
       if(blockTreeNum[d]!=undefined){
         viewport4.append('circle')
                   .attr('cx', treeScale(blockTreeNum[d.toString()]))
                   .attr('cy', airYScale(Number(AirDict[d.toString()])))
-                  .attr('r', 4)
-                  .attr('opacity', 0.9)
+                  .attr('r', 7)
+                  .attr('opacity', 0.8)
                   .attr('index', i)
                   .style('fill', boroMap(d));
       }
     });
 
     // Scatter plot Legend
-    let boroughColor = ["#4682B4", "#ADD8E6","#FF69B4","#008000","#9933ff"]
+    let boroughColor = ["#46A716", "#175978","#995D81","#F7C548","#EB6534"]
     let boroughList = ['Manhattan', 'Staten Island','Bronx','Brooklyn','Queens']
 
     const plotLegend = d3.select("#scatterplotLegend");
@@ -382,15 +383,16 @@
       .enter()
       .append("circle")
       .attr("cx", 10)
-      .attr("cy", (d,i) => i * 25 + 5)
-      .attr("r", 5)
+      .attr("opacity", .8)
+      .attr("cy", (d,i) => i * 25+12)
+      .attr("r", 7)
       .style("fill", d => d);
     plotLegend.append("g").selectAll("text.legendtext")
       .data(boroughList)
       .enter()
       .append("text")
-      .attr("x", 10 + 8)
-      .attr("y", (d,i) => i * 25 + 10) // 100 is where the first dot appears. 25 is the distance between dots
+      .attr("x", 20)
+      .attr("y", (d,i) => i * 25 + 17) // 100 is where the first dot appears. 25 is the distance between dots
       .style("fill", d => d)
       .style("font-size", "12")
       .text(d => d);
