@@ -32,7 +32,6 @@
     </style>
 </head>
 <body>
- 
   <div class="flex-row">
     <div style="padding-left: 20px">
       <h3> Trees and Air Quality in an Urban World</h3>
@@ -48,7 +47,7 @@
             <h5> Air Quality Scale (Particle Concentration - PM2.5) </h5>
             <svg id="colorLegend" height="75" width="400" style="background: #fff" ></svg>
           </div>
-          <div style="padding-left: 50px">
+          <div style="padding-left: 150px">
             <h5> Scatterplot Legend </h5>
             <svg id="scatterplotLegend" height="160" width="100" style="background: #fff" ></svg>
           </div>
@@ -123,10 +122,6 @@
     const trees = await d3.csv("trees.csv");
     const air = await d3.csv("data/air.csv");
     const income = await d3.csv("data/neighborhood_income.csv");
-    console.log(nyc);
-    console.log(trees);
-    console.log(air);
-    console.log(income);
 
     // Compile air quality information
     var AirDict = {};
@@ -197,7 +192,8 @@
         blockPoverty[CDCode].push(Number(income[i].NYC_Poverty_Rate)); // Add the second CD data
       }
     }
-    //calculate block poeverty mean
+
+    // Calculate block poeverty mean
     blockPovertyMean = {}
     Object.keys(blockPoverty).forEach((d,i)=>
     {
@@ -215,7 +211,6 @@
     const airExtent = d3.extent(air, d => Number(d['particle_concentration']));
     const airXScale = d3.scaleLinear().domain(airExtent).range([0,scatterWidth3]); // Air X scale
     const airYScale = d3.scaleLinear().domain(airExtent).range([scatterHeight4, 0]); // Air Y scale
-
 
     // Create scatterplot axes
     let treeBottomAxis = d3.axisBottom(treeScale).ticks(6)
@@ -348,7 +343,7 @@
         .text("Air quality (particle concentration)");
 
     // Data points
-    Object.keys(blockPoverty).forEach((d,i)=>
+    Object.keys(blockPoverty).forEach((d,i) =>
     {
       if(blockTreeNum[d]!=undefined){
         viewport2.append('circle')
@@ -358,19 +353,18 @@
                   .attr('opacity', 0.9)
                   .attr('index', i)
                   .style('fill', boroMap(d));
-
       }
       if(AirDict[d.toString()]!=undefined){
-      viewport3.append('circle')
-                  .attr('cx', airXScale(Number(AirDict[d.toString()])))
-                  .attr('cy', povScale(blockPovertyMean[d.toString()]))
-                  .attr('r', 4)
-                  .attr('opacity', 0.9)
-                  .attr('index', i)
-                  .style('fill', boroMap(d));
+        viewport3.append('circle')
+                    .attr('cx', airXScale(Number(AirDict[d.toString()])))
+                    .attr('cy', povScale(blockPovertyMean[d.toString()]))
+                    .attr('r', 4)
+                    .attr('opacity', 0.9)
+                    .attr('index', i)
+                    .style('fill', boroMap(d));
       }
     });
-    Object.keys(blockTreeNum).forEach((d,i)=>
+    Object.keys(blockTreeNum).forEach((d,i) =>
     {
       // console.log(d.toString(),AirDict[d.toString()],blockTreeNum[d.toString()])
       if(AirDict[d.toString()]!=undefined){
@@ -383,6 +377,7 @@
                     .style('fill', boroMap(d));
         }
     });
+
     // Scatter plot Legend
     let boroughColor = ["#46A716", "#175978","#995D81","#F7C548","#EB6534"]
     let boroughList = ['Manhattan', 'Staten Island','Bronx','Brooklyn','Queens']
@@ -490,7 +485,6 @@
 
       scatterPlot4.attr("clip-path","url(#chartClip4)");
     }
-
 
     function boroMap2(d){
       if(parseInt(d.properties.boro_cd)<=112 && parseInt(d.properties.boro_cd)>=101)
