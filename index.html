@@ -160,14 +160,12 @@
 
     for(let i=0; i<trees.length;i++)
     {
-      let CD_num = CD_to_num[trees[i].nta.slice(0,2)]+trees[i].nta.slice(-2)//CD 02=>202
-      console.log(CD_num)
+      let CD_num = trees[i].boro_ct.slice(0,3)//CD 02=>202
       if (!blockTreeNum[CD_num]){
         blockTreeNum[CD_num] = 0;
       }
       blockTreeNum[CD_num]+=1; // Accumulate tree
     }
-  
     let CDCode = "";
     let CDOriginal = "";
 
@@ -206,7 +204,7 @@
     
     // Set up scales
     const treeExtent = d3.extent(Object.values(blockTreeNum));
-    const treeScale = d3.scaleLinear().domain([0,1530]).range([0, scatterWidth2]); // Tree X scale
+    const treeScale = d3.scaleLinear().domain(treeExtent).range([0, scatterWidth2]); // Tree X scale
 
     pov_data = (d3.map(income,d=>d.NYC_Poverty_Rate)).map(Number)
     const povExtent = d3.extent(pov_data);
@@ -370,10 +368,8 @@
                   .style('fill', boroMap(d));
       }
     });
-    console.log(blockTreeNum)
     Object.keys(blockTreeNum).forEach((d,i)=>
     {
-      console.log(d.toString(),AirDict[d.toString()],blockTreeNum[d.toString()])
       if(AirDict[d.toString()]!=undefined){
           viewport4.append('circle')
                     .attr('cx', treeScale(blockTreeNum[d.toString()]))
