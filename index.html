@@ -152,11 +152,11 @@
     };
     for(let i=0; i<trees2.length;i++)
     {
-      let CD_num = CD_to_num[trees2[i].nta.slice(0,2)]+trees2[i].nta.slice(-2)
+      let CD_num = CD_to_num[trees2[i].nta.slice(0,2)]+trees2[i].nta.slice(-2)//CD 02=>202
       if (!blockTreeNum[CD_num]){
         blockTreeNum[CD_num] = 0;
       }
-      blockTreeNum[CD_num]+=1;
+      blockTreeNum[CD_num]+=1;//accumulate tree
       // blockBorough[CD_num]=(trees2[i].borough);
     }
     let CDCode = "";
