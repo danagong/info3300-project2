@@ -211,7 +211,7 @@
         .attr('transform',`translate(${margin2.left},${margin2.top})`) 
         .call(leftAxis);
     svg3.append('g')
-        .attr('class', 'y axis2')
+        .attr('class', 'y axis3')
         .attr('transform',`translate(${margin2.left},${margin2.top})`) 
         .call(leftAxis);
     let leftGridlines = d3.axisLeft(popScale)
@@ -221,7 +221,7 @@
     svg2.append('g').attr('class', 'y gridlines2')
               .attr('transform',`translate(${margin2.left},${margin2.top})`)
               .call(leftGridlines);
-    svg3.append('g').attr('class', 'y gridlines2')
+    svg3.append('g').attr('class', 'y gridlines3')
               .attr('transform',`translate(${margin2.left},${margin2.top})`)
               .call(leftGridlines);
     // Air scale
@@ -230,14 +230,14 @@
 
     let airBottomAxis = d3.axisBottom(airScale).ticks(6)
     svg3.append('g')
-        .attr('class', 'x axis2')
+        .attr('class', 'x axis3')
         .attr('transform',`translate(${margin3.left},${mapHeight3+margin3.top})`)
         .call(bottomAxis);
     let airBottomGridlines = d3.axisBottom(airScale)
                             .tickSize(-mapHeight3)
                             .tickFormat('')
                             .ticks(6);
-    svg3.append('g').attr('class', 'x gridlines2')
+    svg3.append('g').attr('class', 'x gridlines3')
                     .attr('transform',`translate(${margin3.left},${mapHeight3+margin3.top})`)
                     .call(bottomGridlines);
     //data points
@@ -340,15 +340,15 @@
       viewport3.attr("transform", event.transform);
       //cannot access circles
 
-      airLeftAxis.scale(event.transform.rescaleY(airScale))
-      bottomAxis.scale(event.transform.rescaleX(treeScale))
-      airLeftGridlines.scale(event.transform.rescaleY(airScale))
-      bottomGridlines.scale(event.transform.rescaleX(treeScale))
-
-      d3.select("g.y.axis3").call(airLeftAxis);
-      d3.select("g.x.axis3").call(bottomAxis);
-      d3.select("g.y.gridlines3").call(airLeftGridlines);
-      d3.select("g.x.gridlines3").call(bottomGridlines);
+      leftAxis.scale(event.transform.rescaleY(popScale))
+      airBottomAxis.scale(event.transform.rescaleX(airScale))
+      leftGridlines.scale(event.transform.rescaleY(popScale))
+      airBottomGridlines.scale(event.transform.rescaleX(airScale))
+      
+      d3.select("g.y.axis3").call(leftAxis);
+      d3.select("g.x.axis3").call(airBottomAxis);
+      d3.select("g.y.gridlines3").call(leftGridlines);
+      d3.select("g.x.gridlines3").call(airBottomGridlines);
     }
 
     // Add one dot in the legend for each name.
