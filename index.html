@@ -175,7 +175,6 @@
     for(let i=0; i<income.length;i++)
     {
       CDOriginal = income[i].CD.split(' ');
-      console.log(CDOriginal)
 
       // Add the first CD data
       if ((CDOriginal[3].length)==1)//add 0: BX community district 1 => BX01
@@ -198,7 +197,13 @@
         blockPoverty[CDCode].push(Number(income[i].NYC_Poverty_Rate)); // Add the second CD data
       }
     }
-
+    //calculate block poeverty mean
+    blockPovertyMean = {}
+    Object.keys(blockPoverty).forEach((d,i)=>
+    {
+      blockPovertyMean[d] = d3.mean(blockPoverty[d]);
+    });
+    
     // Set up scales
     const treeExtent = d3.extent(Object.values(blockTreeNum));
     const treeScale = d3.scaleLinear().domain([0,1530]).range([0, scatterWidth2]); // Tree X scale
@@ -348,31 +353,37 @@
       if(blockTreeNum[d]!=undefined){
         viewport2.append('circle')
                   .attr('cx', treeScale(blockTreeNum[d.toString()]))
-                  .attr('cy', povScale(d3.mean(blockPoverty[d.toString()])))
-                  .attr('r', 7)
-                  .attr('opacity', 0.8)
+                  .attr('cy', povScale(blockPovertyMean[d.toString()]))
+                  .attr('r', 4)
+                  .attr('opacity', 0.9)
                   .attr('index', i)
                   .style('fill', boroMap(d));
 
       }
+      if(AirDict[d.toString()]!=undefined){
       viewport3.append('circle')
                   .attr('cx', airXScale(Number(AirDict[d.toString()])))
-                  .attr('cy', povScale(d3.mean(blockPoverty[d.toString()])))
-                  .attr('r', 7)
-                  .attr('opacity', 0.8)
-                  .attr('index', i)
-                  .style('fill', boroMap(d));
-      if(blockTreeNum[d]!=undefined){
-        viewport4.append('circle')
-                  .attr('cx', treeScale(blockTreeNum[d.toString()]))
-                  .attr('cy', airYScale(Number(AirDict[d.toString()])))
-                  .attr('r', 7)
-                  .attr('opacity', 0.8)
+                  .attr('cy', povScale(blockPovertyMean[d.toString()]))
+                  .attr('r', 4)
+                  .attr('opacity', 0.9)
                   .attr('index', i)
                   .style('fill', boroMap(d));
       }
     });
-
+    console.log(blockTreeNum)
+    Object.keys(blockTreeNum).forEach((d,i)=>
+    {
+      console.log(d.toString(),AirDict[d.toString()],blockTreeNum[d.toString()])
+      if(AirDict[d.toString()]!=undefined){
+          viewport4.append('circle')
+                    .attr('cx', treeScale(blockTreeNum[d.toString()]))
+                    .attr('cy', airYScale(Number(AirDict[d.toString()])))
+                    .attr('r', 4)
+                    .attr('opacity', 0.9)
+                    .attr('index', i)
+                    .style('fill', boroMap(d));
+        }
+    });
     // Scatter plot Legend
     let boroughColor = ["#46A716", "#175978","#995D81","#F7C548","#EB6534"]
     let boroughList = ['Manhattan', 'Staten Island','Bronx','Brooklyn','Queens']
@@ -648,7 +659,7 @@
 
       // Scatterplot interactions
       let treePos = treeScale(blockTreeNum[title.toString()]);
-      let povertyPos = povScale(d3.mean(blockPoverty[title.toString()]));
+      let povertyPos = povScale(blockPovertyMean[title.toString()]);
       let airPosX = airXScale(Number(AirDict[title.toString()]));
       let airPosY = airYScale(Number(AirDict[title.toString()]));
       if (treePos!=undefined && povertyPos !=undefined)
