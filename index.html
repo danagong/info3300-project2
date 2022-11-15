@@ -16,41 +16,52 @@
         font-family: "Open Sans";
         background-color:lightyellow"
       }
-      .tooltip {
-        pointer-events: none;
-      }
-      .tree {
+      .tooltip, .tree {
         pointer-events: none;
       }
       .flex-row{
         display: flex;
         flex-direction: row;
       }
- 
+      .gridlines .domain{
+        stroke: none;
+      }
+      .gridlines line {
+        stroke: #bbb;
+      }
     </style>
-
 </head>
 <body>
  
   <div class="flex-row">
-    <div>
+    <div style="padding-left: 20px">
       <h3> Trees and Air Quality in an Urban World</h3>
-      <p> Graph 1: A Map of NY with the distribution of trees. Each green circle of the map represents an individual tree. 
-          The map is colored accorrding to the air particles in the corresponding community district. The legend above shows
-          The scale for coloring. Hover, zoom and pan on the map to find out more information about each districts.
+      <p> 
+        A Map of NY with the distribution of trees. Each green circle of the map represents an individual tree. 
+        The map is colored accorrding to the air particles in the corresponding community district. The legend above shows
+        The scale for coloring. Hover, zoom and pan on the map to find out more information about each districts.
       </p>
-      <div class ="plot">
+      <div class="plot">
         <svg id="nyc-choropleth" height="600" width="800" ></svg>
-        <h5> Air Quality Scale</h5>
-        <svg id="colorLegend" height="100" width="400" style="background: #fff; margin-top:30px" ></svg>
+        <div class="flex-row">
+          <div>
+            <h5> Air Quality Scale (particle concentration) </h5>
+            <svg id="colorLegend" height="75" width="400" style="background: #fff" ></svg>
+          </div>
+          <div style="padding-left: 50px">
+            <h5> Scatterplot Legend </h5>
+            <svg id="scatterplotLegend" height="150" width="100" style="background: #fff" ></svg>
+          </div>
+        </div>
       </div>
     </div>
     <div>
-      <div class ="plot">
-        <h3> Trees and Poverty Rate Scatter Plot</h3>
-        <p> Graph 2: A scatterplot of NY communities with X axis as its count of trees and Y axis as its poverty rate, the
-            circles are colored by their borough. Zoom and pan on the map to see the circle's precise points on the plot.
+      <h3> Trees vs. Poverty Rate vs. Air Quality Scatter Plots</h3>
+        <p> 
+          Scatterplots comparing the relationships between tree count, poverty rate and air quality in NY communities, the
+          circles are colored by their borough. Zoom and pan on the map to see the circle's precise points on the plot.
         </p>
+      <div class="plot">
         <svg id="scatterplot-poverty-trees" height="270" width="560" ></svg>
         <svg id="scatterplot-poverty-air" height="270" width="560"></svg>
         <svg id="scatterplot-air-trees" height="270" width="560"></svg>
@@ -70,7 +81,7 @@
   const map = svg.append("g").attr("transform","translate("+margin.left+","+margin.top+")");
 
   // Scatterplot svgs
-  const scatterMargin = { top: 30, right: 80, bottom: 40, left:50};
+  const scatterMargin = { top: 20, right: 20, bottom: 40, left:50};
 
   // Scatterplot of Poverty vs Trees
   const svg2 = d3.select("#scatterplot-poverty-trees");
@@ -208,32 +219,32 @@
 
     // Scatterplot of Poverty vs Trees
     svg2.append('g')
-        .attr('class', 'xAxis2')
+        .attr('class', 'x axis two')
         .attr('transform',`translate(${scatterMargin.left},${scatterHeight2+scatterMargin.top})`)
         .call(treeBottomAxis);
     let bottomGridlines2 = d3.axisBottom(treeScale)
                             .tickSize(-scatterHeight2)
                             .tickFormat('')
                             .ticks(6);
-    svg2.append('g').attr('class', 'xGridlines2')
+    svg2.append('g').attr('class', 'x gridlines two')
                     .attr('transform',`translate(${scatterMargin.left},${scatterHeight2+scatterMargin.top})`)
                     .call(bottomGridlines2);
 
     svg2.append('g')
-        .attr('class', 'yAxis2')
+        .attr('class', 'y axis two')
         .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`) 
         .call(povLeftAxis);
     let leftGridlines2 = d3.axisLeft(povScale)
                         .tickSize(-scatterWidth2)
                         .tickFormat('')
                         .ticks(4);
-    svg2.append('g').attr('class', 'yGridlines2')
+    svg2.append('g').attr('class', 'y gridlines two')
               .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`)
               .call(leftGridlines2);
     
     svg2.append("text")
       .attr("class", "x label")
-      .attr("text-anchor", "end")
+      .attr("text-anchor", "middle")
       .attr("x", width2/2)
       .attr("y", height2-10)
       .style("font-size", "13")
@@ -241,7 +252,7 @@
     svg2.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 0)
-        .attr("x",0 - (height2 / 2))
+        .attr("x", 0 - (height2 / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .style("font-size", "13")
@@ -250,32 +261,32 @@
     
     // Scatterplot of Poverty vs Air Quality
     svg3.append('g')
-        .attr('class', 'xAxis3')
+        .attr('class', 'x axis three')
         .attr('transform',`translate(${scatterMargin.left},${scatterHeight3+scatterMargin.top})`)
         .call(airBottomAxis);
     let bottomGridlines3 = d3.axisBottom(airXScale)
                             .tickSize(-scatterHeight3)
                             .tickFormat('')
                             .ticks(6);
-    svg3.append('g').attr('class', 'xGridlines3')
+    svg3.append('g').attr('class', 'x gridlines three')
                     .attr('transform',`translate(${scatterMargin.left},${scatterHeight3+scatterMargin.top})`)
                     .call(bottomGridlines3);
 
     svg3.append('g')
-        .attr('class', 'yAxis3')
+        .attr('class', 'y axis three')
         .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`) 
         .call(povLeftAxis);
     let leftGridlines3 = d3.axisLeft(povScale)
                     .tickSize(-scatterWidth3)
                     .tickFormat('')
                     .ticks(4);
-    svg3.append('g').attr('class', 'yGridlines3')
+    svg3.append('g').attr('class', 'y gridlines three')
           .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`)
           .call(leftGridlines3);
     
     svg3.append("text")
       .attr("class", "x label")
-      .attr("text-anchor", "end")
+      .attr("text-anchor", "middle")
       .attr("x", width3/2)
       .attr("y", height3-10)
       .style("font-size", "13")
@@ -283,7 +294,7 @@
     svg3.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 0)
-        .attr("x",0 - (height3 / 2))
+        .attr("x", 0 - (height3 / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .style("font-size", "13")
@@ -291,40 +302,40 @@
 
     // Scatterplot of Poverty vs Air Quality
     svg4.append('g')
-        .attr('class', 'xAxis4')
+        .attr('class', 'x axis four')
         .attr('transform',`translate(${scatterMargin.left},${scatterHeight4+scatterMargin.top})`)
         .call(treeBottomAxis);
     let bottomGridlines4 = d3.axisBottom(treeScale)
                             .tickSize(-scatterHeight4)
                             .tickFormat('')
                             .ticks(6);
-    svg4.append('g').attr('class', 'xGridlines4')
+    svg4.append('g').attr('class', 'x gridlines four')
                     .attr('transform',`translate(${scatterMargin.left},${scatterHeight4+scatterMargin.top})`)
                     .call(bottomGridlines4);
 
     svg4.append('g')
-        .attr('class', 'yAxis4')
+        .attr('class', 'y axis four')
         .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`) 
         .call(airLeftAxis);
     let leftGridlines4 = d3.axisLeft(airYScale)
                     .tickSize(-scatterWidth4)
                     .tickFormat('')
                     .ticks(4);
-    svg4.append('g').attr('class', 'yGridlines4')
+    svg4.append('g').attr('class', 'y gridlines four')
           .attr('transform',`translate(${scatterMargin.left},${scatterMargin.top})`)
           .call(leftGridlines4);
   
     svg4.append("text")
       .attr("class", "x label")
-      .attr("text-anchor", "end")
-      .attr("x", width2/2)
-      .attr("y", height2-10)
+      .attr("text-anchor", "middle")
+      .attr("x", width4/2)
+      .attr("y", height4-10)
       .style("font-size", "13")
       .text("Number of trees");
     svg4.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 0)
-        .attr("x",0 - (height3 / 2))
+        .attr("x", 0 - (height4 / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .style("font-size", "13")
@@ -364,22 +375,24 @@
     // Scatter plot Legend
     let boroughColor = ["#4682B4", "#ADD8E6","#FF69B4","#008000","#9933ff"]
     let boroughList = ['Manhattan', 'Staten Island','Bronx','Brooklyn','Queens']
-    svg2.append("g").selectAll("mydots")
+
+    const plotLegend = d3.select("#scatterplotLegend");
+    plotLegend.append("g").selectAll("circle.legendcircles")
       .data(boroughColor)
       .enter()
       .append("circle")
-      .attr("cx", (width2 * 15)/17)
-      .attr("cy", (d,i) => (height2*2)/3 + i*17) // 100 is where the first dot appears. 25 is the distance between dots
-      .attr("r", 3)
+      .attr("cx", 10)
+      .attr("cy", (d,i) => i * 25 + 5)
+      .attr("r", 5)
       .style("fill", d => d);
-    svg2.append("g").selectAll("scatterplot text")
+    plotLegend.append("g").selectAll("text.legendtext")
       .data(boroughList)
       .enter()
       .append("text")
-      .attr("x", (width2*15)/17 + 5)
-      .attr("y", (d,i) => (height2*2)/3 + 5 + i*17) // 100 is where the first dot appears. 25 is the distance between dots
+      .attr("x", 10 + 8)
+      .attr("y", (d,i) => i * 25 + 10) // 100 is where the first dot appears. 25 is the distance between dots
       .style("fill", d => d)
-      .style("font-size", "10")
+      .style("font-size", "12")
       .text(d => d);
 
     // Scatter plot zoom
@@ -394,43 +407,76 @@
     function plotZoomed2(event) {    
       viewport2.attr("transform", event.transform);
 
+      // Update gridlines/axes
       povLeftAxis.scale(event.transform.rescaleY(povScale))
       treeBottomAxis.scale(event.transform.rescaleX(treeScale))
       leftGridlines2.scale(event.transform.rescaleY(povScale))
       bottomGridlines2.scale(event.transform.rescaleX(treeScale))
 
-      d3.select("g.yAxis2").call(povLeftAxis);
-      d3.select("g.xAxis2").call(treeBottomAxis);
-      d3.select("g.yGridlines2").call(leftGridlines2);
-      d3.select("g.xGridlines2").call(bottomGridlines2);
+      d3.select("g.y.axis.two").call(povLeftAxis);
+      d3.select("g.x.axis.two").call(treeBottomAxis);
+      d3.select("g.y.gridlines.two").call(leftGridlines2);
+      d3.select("g.x.gridlines.two").call(bottomGridlines2);
+
+      // Hide stuff that's out of bounds
+      svg2.append("defs").append("clipPath")
+                    .attr("id","chartClip2")
+                    .append("rect").attr("x",0)
+                                   .attr("y",0)
+                                   .attr("width", scatterWidth2)
+                                   .attr("height", scatterHeight2);
+
+      scatterPlot2.attr("clip-path","url(#chartClip2)");
     }
 
     function plotZoomed3(event) {    
       viewport3.attr("transform", event.transform);
 
+      // Update gridlines/axes
       povLeftAxis.scale(event.transform.rescaleY(povScale))
       airBottomAxis.scale(event.transform.rescaleX(airXScale))
       leftGridlines3.scale(event.transform.rescaleY(povScale))
       bottomGridlines3.scale(event.transform.rescaleX(airXScale))
       
-      d3.select("g.yAxis3").call(povLeftAxis);
-      d3.select("g.xAxis3").call(airBottomAxis);
-      d3.select("g.yGridlines3").call(leftGridlines3);
-      d3.select("g.xGridlines3").call(bottomGridlines3);
+      d3.select("g.y.axis.three").call(povLeftAxis);
+      d3.select("g.x.axis.three").call(airBottomAxis);
+      d3.select("g.y.gridlines.three").call(leftGridlines3);
+      d3.select("g.x.gridlines.three").call(bottomGridlines3);
+
+      // Hide stuff that's out of bounds
+      svg3.append("defs").append("clipPath")
+                    .attr("id","chartClip3")
+                    .append("rect").attr("x",0)
+                                   .attr("y",0)
+                                   .attr("width", scatterWidth3)
+                                   .attr("height", scatterHeight3);
+
+      scatterPlot3.attr("clip-path","url(#chartClip3)");
     }
 
     function plotZoomed4(event) {    
       viewport4.attr("transform", event.transform);
-
+      
+      // Update gridlines/axes
       airLeftAxis.scale(event.transform.rescaleY(airYScale))
       treeBottomAxis.scale(event.transform.rescaleX(treeScale))
       leftGridlines4.scale(event.transform.rescaleY(airYScale))
       bottomGridlines4.scale(event.transform.rescaleX(treeScale))
 
-      d3.select("g.yAxis4").call(airLeftAxis);
-      d3.select("g.xAxis4").call(treeBottomAxis);
-      d3.select("g.yGridlines4").call(leftGridlines4);
-      d3.select("g.xGridlines4").call(bottomGridlines4);
+      d3.select("g.y.axis.four").call(airLeftAxis);
+      d3.select("g.x.axis.four").call(treeBottomAxis);
+      d3.select("g.y.gridlines.four").call(leftGridlines4);
+      d3.select("g.x.gridlines.four").call(bottomGridlines4);
+
+      // Hide stuff that's out of bounds
+      svg4.append("defs").append("clipPath")
+                    .attr("id","chartClip4")
+                    .append("rect").attr("x",0)
+                                   .attr("y",0)
+                                   .attr("width", scatterWidth4)
+                                   .attr("height",scatterHeight4);
+
+      scatterPlot4.attr("clip-path","url(#chartClip4)");
     }
 
 
@@ -456,7 +502,7 @@
     let airColorScale = d3.scaleLinear()
                           .domain(airExtent)
                           .range(['yellow','red']);
-        
+ 
     // Create NYC map
     var projection = d3.geoAlbers().fitSize([mapWidth, mapHeight], nyc)
     const path = d3.geoPath(projection);
@@ -464,17 +510,17 @@
     var viewport = map.append("g");
 
     // Diagonal patch pattern for undefined
-    svg
-      .append('defs')
-      .append('pattern')
-        .attr('id', 'diagonalHatch')
-        .attr('patternUnits', 'userSpaceOnUse')
-        .attr('width', 4)
-        .attr('height', 4)
-      .append('path')
-        .attr('d', 'M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2')
-        .attr('stroke', 'black')
-        .attr('stroke-width', 1);
+    svg.append('defs')
+        .append('pattern')
+          .attr('id', 'diagonalHatch')
+          .attr('patternUnits', 'userSpaceOnUse')
+          .attr('width', 4)
+          .attr('height', 4)
+        .append('path')
+          .attr('d', 'M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2')
+          .attr('stroke', 'black')
+          .attr('stroke-width', 1);
+
     var communities = viewport.selectAll("path.community")
       .data( nyc.features )
       .join("path")
@@ -579,9 +625,6 @@
                       .attr("alignment-baseline","hanging")
                       .attr("x", 60)
                       .attr("y", 47);
-    
-    drawLegend("#colorLegend", airColorScale);
-
 
     function mouseEntersCommunity() {
       tooltip.style("visibility","visible")
@@ -601,7 +644,7 @@
       let yPos = (bounds[1][1] - 50);
       tooltip.attr("transform",`translate(${xPos},${yPos})`);
 
-      // Scatterplot interaction
+      // Scatterplot interactions
       let treePos = treeScale(blockTreeNum[title.toString()]);
       let povertyPos = povScale(d3.mean(blockPoverty[title.toString()]));
       let airPosX = airXScale(Number(AirDict[title.toString()]));
@@ -630,7 +673,7 @@
 
       current = d3.select(this);
       current.style("stroke-width", 1)
-      //scatterplot1
+      // Scatterplot interactions
       scatterplotCircle2.style("visibility","hidden")
       scatterplotCircle3.style("visibility","hidden")
       scatterplotCircle4.style("visibility","hidden")
@@ -765,11 +808,9 @@
           .call(barAxis);
     
   }
-  };
+  drawLegend("#colorLegend", airColorScale);
 
+  };
   requestData();
 </script>
-
-
-
 </html>
