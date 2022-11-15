@@ -130,7 +130,7 @@
     //Map BX10 to 210, and so on
     let CD_to_num = {"BX":"2","BK":"3","MN":"1","QN":"4","SI":"5"}
     let blockTreeNum = {};
-    let blockPopulation = {};
+    let blockPoverty = {};
     function boroMap2(d){
       if(d<=112 && d>=101)
       {
@@ -180,7 +180,7 @@
         }
         else CDCode = CD_to_num[CDOriginal[0]]+CDOriginal[5];
       }
-      blockPopulation[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
+      blockPoverty[CDCode]=Number(nycData[i].NYC_Poverty_Rate);
       
     }
     //tree scale
@@ -241,12 +241,12 @@
                     .attr('transform',`translate(${margin3.left},${mapHeight3+margin3.top})`)
                     .call(bottomGridlines);
     //data points
-    Object.keys(blockPopulation).forEach((d,i)=>
+    Object.keys(blockPoverty).forEach((d,i)=>
     {
       if(blockTreeNum[d]!=undefined){
         viewport2.append('circle')
                   .attr('cx', treeScale(blockTreeNum[d.toString()]))
-                  .attr('cy', popScale(Number(blockPopulation[d.toString()])))
+                  .attr('cy', popScale(Number(blockPoverty[d.toString()])))
                   .attr('r', 4)
                   .attr('opacity', 0.9)
                   .attr('index', i)
@@ -255,7 +255,7 @@
       }
       viewport3.append('circle')
                   .attr('cx', airScale(Number(AirDict[d.toString()])))
-                  .attr('cy', popScale(Number(blockPopulation[d.toString()])))
+                  .attr('cy', popScale(Number(blockPoverty[d.toString()])))
                   .attr('r', 4)
                   .attr('opacity', 0.9)
                   .attr('index', i)
@@ -530,7 +530,7 @@
       //scatterplot interaction
       
       let treePos = treeScale(blockTreeNum[title.toString()]);
-      let povertyPos = popScale(Number(blockPopulation[title.toString()]));
+      let povertyPos = popScale(Number(blockPoverty[title.toString()]));
       let airPos = airScale(Number(AirDict[title.toString()]));
       console.log(airPos)
       console.log(blockTreeNum[title.toString()],Number(blockPopulation[title.toString()]))
