@@ -30,6 +30,7 @@
       .gridlines line {
         stroke: #bbb;
       }
+
     </style>
 </head>
 <body>
@@ -378,6 +379,103 @@
                     .style('fill', boroMap(d));
         }
     });
+
+    // regression function
+    function linearRegression(y,x){
+
+        var lr = {};
+        var n = y.length;
+        var sum_x = 0;
+        var sum_y = 0;
+        var sum_xy = 0;
+        var sum_xx = 0;
+        var sum_yy = 0;
+
+        for (var i = 0; i < y.length; i++) {
+
+            sum_x += x[i];
+            sum_y += y[i];
+            sum_xy += (x[i]*y[i]);
+            sum_xx += (x[i]*x[i]);
+            sum_yy += (y[i]*y[i]);
+        } 
+
+        lr['slope'] = (n * sum_xy - sum_x * sum_y) / (n*sum_xx - sum_x * sum_x);
+        lr['intercept'] = (sum_y - lr.slope * sum_x)/n;
+        lr['r2'] = Math.pow((n*sum_xy - sum_x*sum_y)/Math.sqrt((n*sum_xx-sum_x*sum_x)*(n*sum_yy-sum_y*sum_y)),2);
+
+        return lr;
+
+        };
+
+
+
+
+       //regression line 1
+       var yval1 =  Object.keys(blockPoverty).map(function (d) { return parseFloat((blockPovertyMean[d.toString()])); });
+       var xval1 =  Object.keys(blockPoverty).map(function (d) { return parseFloat(blockTreeNum[d.toString()]); });
+       
+
+
+        var lr1 = linearRegression(yval1,xval1);
+
+        console.log(lr1);
+
+        var max1 = d3.max( Object.keys(blockPoverty), function (d) { return parseFloat(blockTreeNum[d.toString()]); });
+        console.log(max1)
+        var myLine1= viewport2.append("line")
+            .attr("x1", treeScale(0))
+            .attr("y1", povScale(lr1.intercept))
+            .attr("x2", treeScale(max1))
+            .attr("y2", povScale( (max1 * lr1.slope) + lr1.intercept ))
+            .style("stroke-dasharray", ("3, 3"))
+            .attr("class", "r-3")
+            .style("stroke", "black");
+
+
+
+      
+       //regression line 2
+       var yval2 =  Object.keys(blockPoverty).map(function (d) { return parseFloat((blockPovertyMean[d.toString()])); });
+       var xval2 =  Object.keys(blockPoverty).map(function (d) { return parseFloat(Number(AirDict[d.toString()])); });
+       
+
+
+        var lr2  = linearRegression(yval2,xval2);
+
+        console.log(lr2);
+
+        var max2 = d3.max( Object.keys(blockPoverty), function (d) { return parseFloat(Number(AirDict[d.toString()])); });
+        console.log(max2)
+        var myLine1= viewport3.append("line")
+            .attr("x1", airXScale(0))
+            .attr("y1", povScale(lr2.intercept))
+            .attr("x2", airXScale(max2))
+            .attr("y2", povScale( (max2 * lr2.slope) + lr2.intercept ))
+            .style("stroke-dasharray", ("3, 3"))
+            .style("stroke", "black");
+
+
+    //regression line 3
+
+        var yval = Object.keys(blockTreeNum).map(function (d) { return parseFloat((Number(AirDict[d.toString()]))); });
+        var xval = Object.keys(blockTreeNum).map(function (d) { return parseFloat((blockTreeNum[d.toString()])); });
+
+
+        var lr = linearRegression(yval,xval);
+
+        console.log(lr);
+
+
+        var max = d3.max(Object.keys(blockTreeNum), function (d) { return parseFloat((blockTreeNum[d.toString()])); });
+        console.log(max)
+        var myLine = viewport4.append("line")
+            .attr("x1", treeScale(0))
+            .attr("y1", airYScale(lr.intercept))
+            .attr("x2", treeScale(max))
+            .attr("y2", airYScale( (max * lr.slope) + lr.intercept ))
+            .style("stroke-dasharray", ("3, 3"))
+            .style("stroke", "black");
 
     // Scatter plot Legend
     let boroughColor = ["#46A716", "#175978","#995D81","#F7C548","#EB6534"]
