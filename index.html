@@ -34,14 +34,16 @@
     </style>
 </head>
 <body>
-  <h3 style="text-align: center;">Project 2: Trees, Air Quality & Poverty in NYC</h3>
+  <h2 style="text-align: center;">INFO 3300 Project 2: Trees, Air Quality, & Poverty in NYC</h2>
+  <h4 style="text-align: center;">Eric Freitag (eef49), Dana Gong (dg588), Jiadi Huang (jh2649), Mei-Jen Lee (ml2298)</h4>
   <div class="flex-row">
     <div style="padding-left: 20px">
-      <h3> Trees vs Air Quality Choropleth Map</h3>
+      <h3> Trees vs. Air Quality Choropleth Map</h3>
       <p> 
-        A Map of NY with the distribution of trees. Each green circle of the map represents an individual tree. 
-        The map is colored accorrding to the air particles in the corresponding community district. The legend above shows
-        The scale for coloring. Hover, zoom and pan on the map to find out more information about each districts.
+        A map of New York City air quality and tree distribution. Each green circle on the map represents an individual tree. 
+        The map is colored according to the air particles in the corresponding community district. The legend below the map shows
+        the scale for the coloring. Hover, zoom, and pan over the map to find out more information about each district and locate
+        the corresponding data points for each community in the scatter plots.
       </p>
       <div class="plot">
         <svg id="nyc-choropleth" height="600" width="800" ></svg>
@@ -57,8 +59,8 @@
     <div>
       <h3> Trees vs. Poverty Rate vs. Air Quality Scatter Plots</h3>
         <p> 
-          Scatterplots comparing the relationships between tree count, poverty rate and air quality in NY communities, the
-          circles are colored by their borough. Zoom and pan on the map to see the circle's precise points on the plot.
+          Scatter plots comparing the relationships between tree count, poverty rate, and air quality in NYC communities. The
+          circles are colored by their borough according to the legend on the right. Zoom and pan over each plot to see a more precise view of the data.
         </p>
       <div class="plot">
         <svg id="scatterplot-poverty-trees" height="270" width="560" ></svg>
@@ -124,7 +126,7 @@
   const requestData = async function() {
     // Import data sets
     const nyc = await d3.json("data/map.geojson");
-    const trees = await d3.csv("trees.csv");
+    const trees = await d3.csv("data/trees.csv");
     const air = await d3.csv("data/air.csv");
     const income = await d3.csv("data/neighborhood_income.csv");
 
@@ -165,7 +167,6 @@
         blockTreeNum[CD_num] = 0;
       }
       blockTreeNum[CD_num]+=1; // Accumulate tree
-      // console.log(trees[i])
     }
     
     let CDCode = "";
@@ -371,7 +372,6 @@
     });
     Object.keys(blockTreeNum).forEach((d,i) =>
     {
-      // console.log(d.toString(),AirDict[d.toString()],blockTreeNum[d.toString()])
       if(AirDict[d.toString()]!=undefined){
           viewport4.append('circle')
                     .attr('cx', treeScale(blockTreeNum[d.toString()]))
@@ -383,102 +383,80 @@
         }
     });
 
-    // regression function
-
-    // function from Stack Overflow: https://stackoverflow.com/questions/20507536/d3-js-linear-regression
+    // Regression Function
+    // Function from Stack Overflow: https://stackoverflow.com/questions/20507536/d3-js-linear-regression
     function linearRegression(y,x){
+      var lr = {};
+      var n = y.length;
+      var sum_x = 0;
+      var sum_y = 0;
+      var sum_xy = 0;
+      var sum_xx = 0;
+      var sum_yy = 0;
 
-        var lr = {};
-        var n = y.length;
-        var sum_x = 0;
-        var sum_y = 0;
-        var sum_xy = 0;
-        var sum_xx = 0;
-        var sum_yy = 0;
+      for (var i = 0; i < y.length; i++) {
 
-        for (var i = 0; i < y.length; i++) {
+          sum_x += x[i];
+          sum_y += y[i];
+          sum_xy += (x[i]*y[i]);
+          sum_xx += (x[i]*x[i]);
+          sum_yy += (y[i]*y[i]);
+      } 
 
-            sum_x += x[i];
-            sum_y += y[i];
-            sum_xy += (x[i]*y[i]);
-            sum_xx += (x[i]*x[i]);
-            sum_yy += (y[i]*y[i]);
-        } 
+      lr['slope'] = (n * sum_xy - sum_x * sum_y) / (n*sum_xx - sum_x * sum_x);
+      lr['intercept'] = (sum_y - lr.slope * sum_x)/n;
+      lr['r2'] = Math.pow((n*sum_xy - sum_x*sum_y)/Math.sqrt((n*sum_xx-sum_x*sum_x)*(n*sum_yy-sum_y*sum_y)),2);
 
-        lr['slope'] = (n * sum_xy - sum_x * sum_y) / (n*sum_xx - sum_x * sum_x);
-        lr['intercept'] = (sum_y - lr.slope * sum_x)/n;
-        lr['r2'] = Math.pow((n*sum_xy - sum_x*sum_y)/Math.sqrt((n*sum_xx-sum_x*sum_x)*(n*sum_yy-sum_y*sum_y)),2);
+      return lr;
 
-        return lr;
+    };
 
-        };
+    // Regression line 1
+    var yval1 =  Object.keys(blockPoverty).map(function (d) { return parseFloat((blockPovertyMean[d.toString()])); });
+    var xval1 =  Object.keys(blockPoverty).map(function (d) { return parseFloat(blockTreeNum[d.toString()]); });
 
+    var lr1 = linearRegression(yval1,xval1);
 
+    var max1 = d3.max( Object.keys(blockPoverty), function (d) { return parseFloat(blockTreeNum[d.toString()]); });
+    var myLine1= viewport2.append("line")
+        .attr("x1", treeScale(0))
+        .attr("y1", povScale(lr1.intercept))
+        .attr("x2", treeScale(max1))
+        .attr("y2", povScale( (max1 * lr1.slope) + lr1.intercept ))
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("class", "r-3")
+        .style("stroke", "black");
 
+    // Regression line 2
+    var yval2 =  Object.keys(blockPoverty).map(function (d) { return parseFloat((blockPovertyMean[d.toString()])); });
+    var xval2 =  Object.keys(blockPoverty).map(function (d) { return parseFloat(Number(AirDict[d.toString()])); });
 
-       //regression line 1
-       var yval1 =  Object.keys(blockPoverty).map(function (d) { return parseFloat((blockPovertyMean[d.toString()])); });
-       var xval1 =  Object.keys(blockPoverty).map(function (d) { return parseFloat(blockTreeNum[d.toString()]); });
-       
+    var lr2  = linearRegression(yval2,xval2);
 
-
-        var lr1 = linearRegression(yval1,xval1);
-
-        console.log(lr1);
-
-        var max1 = d3.max( Object.keys(blockPoverty), function (d) { return parseFloat(blockTreeNum[d.toString()]); });
-        console.log(max1)
-        var myLine1= viewport2.append("line")
-            .attr("x1", treeScale(0))
-            .attr("y1", povScale(lr1.intercept))
-            .attr("x2", treeScale(max1))
-            .attr("y2", povScale( (max1 * lr1.slope) + lr1.intercept ))
-            .style("stroke-dasharray", ("3, 3"))
-            .attr("class", "r-3")
-            .style("stroke", "black");
-
-
-
-      
-       //regression line 2
-       var yval2 =  Object.keys(blockPoverty).map(function (d) { return parseFloat((blockPovertyMean[d.toString()])); });
-       var xval2 =  Object.keys(blockPoverty).map(function (d) { return parseFloat(Number(AirDict[d.toString()])); });
-
-        var lr2  = linearRegression(yval2,xval2);
-
-        console.log(lr2);
-
-        var max2 = d3.max( Object.keys(blockPoverty), function (d) { return parseFloat(Number(AirDict[d.toString()])); });
-        console.log(max2)
-        var myLine1= viewport3.append("line")
-            .attr("x1", airXScale(7.8))
-            .attr("y1", povScale( 7.8*((((max2 * lr2.slope)+lr2.intercept)-lr2.intercept)/max2)+lr2.intercept))
-            .attr("x2", airXScale(max2))
-            .attr("y2", povScale( (max2 * lr2.slope) + lr2.intercept ))
-            .style("stroke-dasharray", ("3, 3"))
-            .style("stroke", "black");
+    var max2 = d3.max( Object.keys(blockPoverty), function (d) { return parseFloat(Number(AirDict[d.toString()])); });
+    var myLine1= viewport3.append("line")
+        .attr("x1", airXScale(7.8))
+        .attr("y1", povScale( 7.8*((((max2 * lr2.slope)+lr2.intercept)-lr2.intercept)/max2)+lr2.intercept))
+        .attr("x2", airXScale(max2))
+        .attr("y2", povScale( (max2 * lr2.slope) + lr2.intercept ))
+        .style("stroke-dasharray", ("3, 3"))
+        .style("stroke", "black");
 
 
-    //regression line 3
+    // Regression line 3
+    var yval = Object.keys(blockTreeNum).map(function (d) { return parseFloat((Number(AirDict[d.toString()]))); });
+    var xval = Object.keys(blockTreeNum).map(function (d) { return parseFloat((blockTreeNum[d.toString()])); });
 
-        var yval = Object.keys(blockTreeNum).map(function (d) { return parseFloat((Number(AirDict[d.toString()]))); });
-        var xval = Object.keys(blockTreeNum).map(function (d) { return parseFloat((blockTreeNum[d.toString()])); });
+    var lr = linearRegression(yval,xval);
 
-
-        var lr = linearRegression(yval,xval);
-
-        console.log(lr);
-
-
-        var max = d3.max(Object.keys(blockTreeNum), function (d) { return parseFloat((blockTreeNum[d.toString()])); });
-        console.log(max)
-        var myLine = viewport4.append("line")
-            .attr("x1", treeScale(0))
-            .attr("y1", airYScale(lr.intercept))
-            .attr("x2", treeScale(max))
-            .attr("y2", airYScale( (max * lr.slope) + lr.intercept ))
-            .style("stroke-dasharray", ("3, 3"))
-            .style("stroke", "black");
+    var max = d3.max(Object.keys(blockTreeNum), function (d) { return parseFloat((blockTreeNum[d.toString()])); });
+    var myLine = viewport4.append("line")
+        .attr("x1", treeScale(0))
+        .attr("y1", airYScale(lr.intercept))
+        .attr("x2", treeScale(max))
+        .attr("y2", airYScale( (max * lr.slope) + lr.intercept ))
+        .style("stroke-dasharray", ("3, 3"))
+        .style("stroke", "black");
 
     // Scatter plot Legend
     let boroughColor = ["#46A716", "#175978","#995D81","#F7C548","#EB6534"]
