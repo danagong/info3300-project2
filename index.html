@@ -443,8 +443,6 @@
        //regression line 2
        var yval2 =  Object.keys(blockPoverty).map(function (d) { return parseFloat((blockPovertyMean[d.toString()])); });
        var xval2 =  Object.keys(blockPoverty).map(function (d) { return parseFloat(Number(AirDict[d.toString()])); });
-       
-
 
         var lr2  = linearRegression(yval2,xval2);
 
@@ -453,8 +451,8 @@
         var max2 = d3.max( Object.keys(blockPoverty), function (d) { return parseFloat(Number(AirDict[d.toString()])); });
         console.log(max2)
         var myLine1= viewport3.append("line")
-            .attr("x1", airXScale(0))
-            .attr("y1", povScale(lr2.intercept))
+            .attr("x1", airXScale(7.8))
+            .attr("y1", povScale( 7.8*((((max2 * lr2.slope)+lr2.intercept)-lr2.intercept)/max2)+lr2.intercept))
             .attr("x2", airXScale(max2))
             .attr("y2", povScale( (max2 * lr2.slope) + lr2.intercept ))
             .style("stroke-dasharray", ("3, 3"))
